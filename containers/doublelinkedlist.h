@@ -1,3 +1,5 @@
+#ifndef __DOUBLELINKEDLIST_H__
+#define __DOUBLELINKEDLIST_H__
 #include "linkedlist.h"
 
 template <typename T>
@@ -9,7 +11,7 @@ private:
     Node *m_pPrev;
 public:
     DLLNode(T data, Ref ref, Node *pNext = nullptr, Node *pPrev = nullptr)
-        : LLNode(data, ref, pNext), m_pPrev(pPrev){}
+        : LLNode<T>::LLNode(data, ref, pNext), m_pPrev(pPrev){}
 
     Node*  getPrev() const { return m_pPrev; }
     Node*& getPrevRef() { return m_pPrev; }
@@ -48,7 +50,7 @@ public:
 };
 
 template <typename Traits>
-class DoubleLinkedList public LinkedList<Traits>{
+class DoubleLinkedList : public LinkedList<Traits>{
 public:
     using value_type = typename Traits::value_type;
     using Node       = typename Traits::Node;
@@ -66,7 +68,14 @@ private:
 
 public:
     DoubleLinkedList() : m_pHead(nullptr), m_pTail(nullptr), m_size(0) {}
-    DoubleLinkedList(DoubleLinkedList &other){}
+    DoubleLinkedList(DoubleLinkedList &other){
+        Node* pTemp = other.m_pHead;
+
+        while(pTemp != nullptr){
+            push_back(pTemp -> getData(), pTemp -> getRef());
+            pTemp = pTemp->getNext();
+        }
+    }
     DoubleLinkedList(DoubleLinkedList &&other){
         scoped_lock<mutex> lock(m_mtx);
         m_pHead = exchange(other.m_pHead, nullptr);
@@ -88,14 +97,28 @@ public:
     size_t size () const { return m_size; }
     bool isEmpty() const { return m_pHead == nullptr; }
     
-    voidd insert(value_type value, Ref ref){
+    //void insert(value_type value, Ref ref){
         // TODO: insertar la el nodo hacia adelante (como en la LinkedList)
         // adicionalmente conectar el nodo anterior con su nuevo siguiente
         // usar internal insert pero debe devolver el nuevo nodo creado y 
         // el puntero al lnodo anterior
-    }
-    void push_back(value_type value, Ref ref);
-    value_type pop_back();
+    //}
+    void push_back(value_type value, Ref ref){
+       
+        scoped_lock<mutex> lock(m_mtx);
+        Node* pTemp = new Node(value, ref, nullptr, m_pTail); //Ultimo nodo
+        
+        if (m_size == 0){
+            m_pHead = pTemp;
+            m_pTail = pTemp; 
+        } else {
+            m_pTail->setNext(pTemp);
+            pTemp -> setPrev(m_pTail);
+            m_pTail = pTemp;
+        }                  
+        ++m_size;
+    };
+    //value_type pop_back(); El retorno debe coincidir
 
     forward_iterator begin()   { return forward_iterator(this, m_pHead); }
     forward_iterator end()     { return forward_iterator(this, nullptr); }
@@ -126,3 +149,5 @@ public:
         return ::FirstThat(rbegin(), rend(), func, forward<Args>(args)...);
     }
 };
+
+#endif //__DOUBLELINKEDLIST_H__ 

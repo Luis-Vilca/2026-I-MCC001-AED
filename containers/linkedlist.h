@@ -7,7 +7,7 @@
 #include <sstream>
 #include <mutex>     // mutex
 #include "general_iterator.h"
-#include "util.h"
+#include "../util.h"
 #include "../types.h"
 #include "../foreach.h"
 #include "basetrait.h"
@@ -205,8 +205,9 @@ private:
 public:
     virtual void    insert(const value_type &value, Ref ref);
     
-    virtual Node& operator[](const size_t index) const{
+    virtual Node& operator[](const size_t index){
         
+        scoped_lock<mutex> lock(m_mtx);
         if (index >= m_size)
         throw out_of_range("Index out of range");
 
