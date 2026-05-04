@@ -31,7 +31,7 @@ int main() {
     // DemoMacros();
     //DemoVector();
     // DemoConcurrentVector();
-    //ListsDemo();
+    ListsDemo();
     DoubleListsDemo();
     return 0;
 }

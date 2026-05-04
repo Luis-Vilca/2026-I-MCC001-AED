@@ -11,8 +11,10 @@ private:
     Node *m_pPrev;
 public:
     DLLNode(T data, Ref ref, Node *pNext = nullptr, Node *pPrev = nullptr)
-        : LLNode<T>::LLNode(data, ref, pNext), m_pPrev(pPrev){}
+        : LLNode<T>(data, ref, pNext), m_pPrev(pPrev){}
 
+    Node*  getNext() const {return static_cast<Node*>(LLNode<T>::getNext());}
+    Node*& getNextRef() {return reinterpret_cast<Node*&>(LLNode<T>::getNextRef());}
     Node*  getPrev() const { return m_pPrev; }
     Node*& getPrevRef() { return m_pPrev; }
     void   setPrev(Node* pPrev) { m_pPrev = pPrev; }
@@ -56,20 +58,22 @@ public:
     using Node       = typename Traits::Node;
     using Comp       = typename Traits::Comp;
     using MySelf     = DoubleLinkedList<Traits>;
+    using LinkedList<Traits>::m_pRoot;
+    using LinkedList<Traits>::m_pTail;
+    using LinkedList<Traits>::m_size;
 
     using forward_iterator  = LinkedListForwardIterator<MySelf>;
     using backward_iterator = DoubleLinkedListBackwardIterator<MySelf>;
 
 private:
-    Node *m_pHead;
-    Node *m_pTail;
-    size_t m_size;
     mutex  m_mtx;
 
 public:
-    DoubleLinkedList() : m_pHead(nullptr), m_pTail(nullptr), m_size(0) {}
-    DoubleLinkedList(DoubleLinkedList &other){
-        Node* pTemp = other.m_pHead;
+    DoubleLinkedList() {m_pRoot = nullptr; m_pTail = nullptr; m_size=0;}
+    DoubleLinkedList(const DoubleLinkedList &other){
+        
+        scoped_lock<mutex> lock(m_mtx);
+        Node* pTemp = other.m_pRoot;
 
         while(pTemp != nullptr){
             push_back(pTemp -> getData(), pTemp -> getRef());
@@ -78,24 +82,13 @@ public:
     }
     DoubleLinkedList(DoubleLinkedList &&other){
         scoped_lock<mutex> lock(m_mtx);
-        m_pHead = exchange(other.m_pHead, nullptr);
+        m_pRoot = exchange(other.m_pRoot, nullptr);
         m_pTail = exchange(other.m_pTail, nullptr);
         m_size = exchange(other.m_size, 0);
     }
-    ~DoubleLinkedList() {
-        scoped_lock<mutex> lock(m_mtx);
-        while (m_pHead != nullptr) {
-            Node *pTemp = m_pHead;
-            m_pHead = m_pHead->getNextRef();
-            delete pTemp;
-        }
-        m_pHead = nullptr;
-        m_pTail = nullptr;
-        m_size = 0;
-    }
     
     size_t size () const { return m_size; }
-    bool isEmpty() const { return m_pHead == nullptr; }
+    bool isEmpty() const { return m_pRoot == nullptr; }
     
     //void insert(value_type value, Ref ref){
         // TODO: insertar la el nodo hacia adelante (como en la LinkedList)
@@ -109,7 +102,7 @@ public:
         Node* pTemp = new Node(value, ref, nullptr, m_pTail); //Ultimo nodo
         
         if (m_size == 0){
-            m_pHead = pTemp;
+            m_pRoot = pTemp;
             m_pTail = pTemp; 
         } else {
             m_pTail->setNext(pTemp);
@@ -120,7 +113,7 @@ public:
     };
     //value_type pop_back(); El retorno debe coincidir
 
-    forward_iterator begin()   { return forward_iterator(this, m_pHead); }
+    forward_iterator begin()   { return forward_iterator(this, m_pRoot); }
     forward_iterator end()     { return forward_iterator(this, nullptr); }
     backward_iterator rbegin() { return backward_iterator(this, m_pTail); }
     backward_iterator rend()   { return backward_iterator(this, nullptr); }
@@ -149,5 +142,6 @@ public:
         return ::FirstThat(rbegin(), rend(), func, forward<Args>(args)...);
     }
 };
+
 
 #endif //__DOUBLELINKEDLIST_H__ 
