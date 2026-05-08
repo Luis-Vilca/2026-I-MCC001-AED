@@ -1,6 +1,11 @@
 #include "containers/doublelinkedlist.h"
 #include <fstream>
 
+template <typename Node>
+void Print(Node &node, ostream& os){
+    os << node << ",";
+}
+
 void DoubleLinkedListDemo(){
     cout << endl << "Prueba lista doble enlazada:" << endl;
     DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list1;
@@ -29,14 +34,23 @@ void DoubleLinkedListDemo(){
     ofs.close();
 
     ifstream file("lista2.txt");
-    LinkedList<AscendingLinkedListTrait<TI>> list3;
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list3;
     file >> list3;
     cout << "Lista 3 creada con datos de la lista 2: " << list3 << endl;
 
     list3.push_back(5, 40);
     cout << endl <<"Prueba Copy Constructor: " << endl;
-    LinkedList<AscendingLinkedListTrait<TI>> list4(list3);
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list4(list3);
     cout << "Lista 4: " << list4 << endl;
+
+    using DLI = DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>>::Node;
+    
+    cout << endl <<"Prueba Forward iterator: " << endl;
+    list4.ForEach(Print<DLI>, cout);
+
+    cout << endl <<"Prueba Backward iterator: " << endl;
+    list4.ReverseForEach(Print<DLI>, cout);
+
 
 }
 
