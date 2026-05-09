@@ -93,11 +93,11 @@ public:
     size_t size () const { return m_size; }
     bool isEmpty() const { return m_pRoot == nullptr; }
     
-    void insert(value_type value, Ref ref);
         // TODO: insertar la el nodo hacia adelante (como en la LinkedList)
         // adicionalmente conectar el nodo anterior con su nuevo siguiente
         // usar internal insert pero debe devolver el nuevo nodo creado y 
         // el puntero al lnodo anterior
+
     void push_back(value_type value, Ref ref){
        
         scoped_lock<mutex> lock(m_mtx);
@@ -149,29 +149,24 @@ template <typename Traits>
 void DoubleLinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
     
     scoped_lock<mutex> lock(m_mtx);
-    if (!pCurrent || m_comp(value, pCurrent->getDataRef())) {
+    if (!pPrev || m_comp(value, pPrev->getDataRef())) {
 
-        Node* newNode = new Node(value, ref, pCurrent, pParent);
-
+        Node* pTemp = new Node(value, ref, pPrev, nullptr);
         // conectar previous del siguiente nodo
-        if (pCurrent)
-            pCurrent->setPrev(newNode);
-
-        pCurrent = newNode;
-
+        if (pPrev)
+            pPrev->setPrev(pTemp);
+        pPrev = pTemp;
         // actualizar tail
-        if (newNode->getNext() == nullptr)
-            m_pTail = newNode;
-
-        // si lista vacía
+        if (pTemp->getNext() == nullptr)
+            m_pTail = pTemp;
+        // si la lista está vacía
         if (m_size == 0)
-            m_pRoot = newNode;
-
+            m_pRoot = pTemp;
         ++m_size;
         return;
     }
 
-    internal_insert(pCurrent->getNextRef(), pCurrent, value, ref);
+    internal_insert(pPrev->getNextRef(), value, ref);
 }
 
 #endif //__DOUBLELINKEDLIST_H__ 

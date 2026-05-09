@@ -51,7 +51,12 @@ void DoubleLinkedListDemo(){
     cout << endl <<"Prueba Backward iterator: " << endl;
     list4.ReverseForEach(Print<DLI>, cout);
 
+    cout << endl <<"Prueba Insert: " << endl;
+    DoubleLinkedList<AscendingDoubleLinkedListTrait<TI>> list5;
 
+    list5.insert(1, 10);
+    list5.insert(2, 20);
+    cout << "Lista ascendente 5: " << list5 << endl;
 }
 
 void DoubleListsDemo(){

@@ -3,4 +3,6 @@
 
 void ListsDemo();
 void DoubleListsDemo();
+void CircularListsDemo();
+void CircularDoubleListsDemo();
 #endif // __LISTS_H__
