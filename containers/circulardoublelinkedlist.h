@@ -32,12 +32,29 @@ public:
     using LinkedList<Traits>::m_size;
 private:
     mutex  m_mtx;
-    mutex  m_mtx2;
-private:
-    void internal_insert(Node* &pParent, const value_type &value, Ref ref);
 
 public:
-    
+    ~CircularDoubleLinkedList() override{
+        if(m_pRoot != nullptr && m_pTail != nullptr){
+            m_pTail->setNext(nullptr);
+            m_pRoot->setPrev(nullptr);
+        }
+    }
+
+    virtual void    insert(const value_type &value, Ref ref){
+        
+        scoped_lock<mutex> lock(m_mtx);
+        if (m_pTail)
+            m_pTail->setNext(nullptr);
+        if(m_pRoot)
+            m_pRoot->setPrev(nullptr);
+        DoubleLinkedList<Traits>::insert(value, ref);
+        if (m_pRoot && m_pTail){
+            m_pTail->setNext(m_pRoot);
+            m_pRoot->setPrev(m_pTail);
+        }
+    };
+       
     // Agregar Foreach
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&...  args){
@@ -51,44 +68,7 @@ public:
         }
        
     }
-};
-
-template <typename Traits>
-void CircularDoubleLinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
     
-    scoped_lock<mutex> lock(m_mtx);
-    if (!pPrev || m_comp(value, pPrev->getDataRef())) {
-        if (m_size == 0) {
-            Node* pTemp = new Node(value, ref, nullptr, nullptr);
-            m_pRoot = pTemp;            
-            m_pTail = pTemp;
-            pTemp->setNext(pTemp);      
-            pTemp->setPrev(pTemp);
-            pPrev = pTemp;
-            ++m_size;
-            return;
-        }
-
-        Node* pTemp = new Node(value, ref, pPrev);
-        pPrev->setNext(pTemp);
-        pPrev->setPrev(pTemp);
-
-        if (pPrev == m_pRoot)
-            m_pRoot = pTemp;
-        pPrev = pTemp;
-        ++m_size;
-        return;
-    }
-
-    if (pPrev->getNext() == m_pRoot) {
-        Node* pTemp = new Node(value, ref, m_pRoot, m_pTail);
-        m_pTail->setNext(pTemp);
-        m_pRoot->setPrev(pTemp);
-        m_pTail = pTemp;
-        ++m_size;
-        return;
-    }
-    internal_insert(pPrev->getNextRef(), value, ref);
-}
+};
 
 #endif //__CIRCULARDOUBLELINKEDLIST_H__

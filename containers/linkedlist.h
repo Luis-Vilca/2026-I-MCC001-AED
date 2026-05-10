@@ -246,7 +246,7 @@ void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, 
     if(!pPrev || m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
         m_size++;
-        if(pPrev == m_pRoot)
+        if(pPrev->getNext() == nullptr)
             m_pTail = pPrev;
         return;
     }

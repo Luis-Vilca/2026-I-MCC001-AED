@@ -31,18 +31,32 @@ public:
     using LinkedList<Traits>::m_pTail;
     using LinkedList<Traits>::m_size;
 private:
-    mutex  m_mtx;
-    mutex  m_mtx2;
-private:
-    void internal_insert(Node* &pParent, const value_type &value, Ref ref);
+mutex  m_mtx;    
+mutex  m_mtx2;
 
 public:
+    ~CircularLinkedList() override{
+        if(m_pRoot != nullptr)
+            m_pTail->setNext(nullptr);
+    }
+
+    virtual void   insert(const value_type &value, Ref ref){
+        
+        scoped_lock<mutex> lock(m_mtx);
+
+        if (m_pTail != nullptr)
+            m_pTail->setNext(nullptr);
+
+        LinkedList<Traits>::insert(value, ref);
+
+        if (m_pTail != nullptr)
+            m_pTail->setNext(m_pRoot);
+    };
     
     // Agregar Foreach
     template <typename Func, typename... Args>
     void ForEach(Func func, Args &&...  args){
         scoped_lock<mutex> lock(m_mtx);
-
         Node* pTemp = m_pRoot;
 
         for(size_t i = 0; i < m_size; ++i){
@@ -52,26 +66,5 @@ public:
        
     }
 };
-
-template <typename Traits>
-void CircularLinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
-    
-    scoped_lock<mutex> lock(m_mtx);
-    if (!pPrev || m_comp(value, pPrev->getDataRef())) {
-        Node* pTemp = new Node(value, ref, pPrev);
-        pPrev = pTemp;
-        ++m_size;
-        if (pPrev == m_pRoot) {
-            if (m_size == 1)
-                m_pTail = m_pRoot;
-        }
-        if (pTemp->getNext() == nullptr)
-            m_pTail = pTemp;
-        
-        m_pTail->setNext(m_pRoot);
-        return;
-    }
-    internal_insert(pPrev->getNextRef(), value, ref);
-}
 
 #endif //__CIRCULARLINKEDLIST_H__
