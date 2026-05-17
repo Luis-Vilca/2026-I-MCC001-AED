@@ -4,15 +4,19 @@
 #include <mutex>
 #include "vector.h"
 
-template <typename Traits>
+using namespace std;
+
+template <typename T>
 class HeapNode{
-    private:
-        typename Traits::value_type m_data;
-        Ref m_ref;
     public:
-        HeapNode(typename Traits::value_type data, Ref ref) : m_data(data), m_ref(ref) {}
+        using value_type = T;
+    private:
+        value_type m_data;
+        Ref        m_ref;
+    public:
+        HeapNode(value_type data, Ref ref) : m_data(data), m_ref(ref) {}
         
-        typename Traits::value_type GetData() const { return m_data; }
+        value_type GetData() const { return m_data; }
         Ref GetRef()  const { return m_ref;  }
 };
 
@@ -40,17 +44,34 @@ public:
 private:
     vector<Node> m_heap;
     Comp         m_comp;
+    mutex        m_mtx;
+    mutex        m_mtx2;
 public:
+    Heap() {};
+
+    Heap(const Heap &other){ //Copy constructor
+        scoped_lock<mutex> lock(m_mtx2);
+        m_comp = other.m_comp;
+        m_heap = other.m_heap;
+    };
+
+    Heap(Heap &&other){ //Move constructor
+        scoped_lock<mutex> lock(m_mtx);
+        m_comp = exchange(other.m_comp, Comp{});
+        m_heap = exchange(other.m_heap, vector<Node>{});
+    };
 
     void insert(const value_type &value, Ref ref) {
+        scoped_lock<mutex> lock(m_mtx);
         m_heap.push_back( Node(value, ref) );
         heapify_up(m_heap.size() - 1);
     }
 
     // Revisar completamente
     void extract() {
+        scoped_lock<mutex> lock(m_mtx);
         if (m_heap.empty()) {
-            throw std::out_of_range("Heap is empty");
+            throw out_of_range("Heap is empty");
         }
         if (m_heap.size() == 1) {
             m_heap.pop_back();
@@ -61,11 +82,12 @@ public:
         heapify_down(0);
     }
 
-    T peek_min() const {
+    value_type peek_min() {
+        scoped_lock<mutex> lock(m_mtx);
         if (m_heap.empty()) {
-            throw std::out_of_range("Heap is empty");
+            throw out_of_range("Heap is empty");
         }
-        return m_heap[0];
+        return m_heap[0].GetData();
     }
 
     bool empty() const {
@@ -78,10 +100,11 @@ public:
 
 private:
     void heapify_up(size_t index) {
+        scoped_lock<mutex> lock(m_mtx2);
         while (index > 0) {
             size_t parent = (index - 1) / 2;
-            if ( m_comp(m_heap[index], m_heap[parent]) ) {
-                std::swap(m_heap[index], m_heap[parent]);
+            if ( m_comp(m_heap[index].GetData(), m_heap[parent].GetData()) ) {
+                swap(m_heap[index], m_heap[parent]);
                 index = parent;
             } else {
                 break;
@@ -90,19 +113,20 @@ private:
     }
 
     void heapify_down(size_t index) {
+        scoped_lock<mutex> lock(m_mtx);
         size_t left = 2 * index + 1;
         size_t right = 2 * index + 2;
         size_t smallest = index;
 
-        if (left < m_heap.size() && m_comp(m_heap[left], m_heap[smallest]) ) {
+        if (left < m_heap.size() && m_comp(m_heap[left].GetData(), m_heap[smallest].GetData()) ) {
             smallest = left;
         }
-        if (right < m_heap.size() && m_comp(m_heap[right], m_heap[smallest]) ) {
+        if (right < m_heap.size() && m_comp(m_heap[right].GetData(), m_heap[smallest].GetData()) ) {
             smallest = right;
         }
 
         if (smallest != index) {
-            std::swap(m_heap[index], m_heap[smallest]);
+            swap(m_heap[index], m_heap[smallest]);
             heapify_down(smallest);
         }
     }
