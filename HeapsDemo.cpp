@@ -12,9 +12,9 @@ void HeapDemo(){
     heap1.insert(20, 13);
 
     Heap<DescendingHeapTrait<TI>> heap2 (heap1);
-    cout << heap2.peek_min() <<endl;
+    cout << heap2 <<endl;
 
     Heap<DescendingHeapTrait<TI>> heap3 = move(heap2);
-    cout << heap3.peek_min() <<endl;
-    cout << heap2.peek_min() <<endl;
+    cout << heap3 <<endl;
+    cout << heap2 <<endl;
 }

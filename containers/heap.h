@@ -98,6 +98,8 @@ public:
         return m_heap.size();
     }
 
+    virtual string  toString();
+
 private:
     void heapify_up(size_t index) {
         scoped_lock<mutex> lock(m_mtx2);
@@ -132,4 +134,26 @@ private:
     }
 };
 
+template <typename Traits>
+string  Heap<Traits>::toString() {
+    
+    scoped_lock lock(m_mtx);
+    if (m_heap.empty()) 
+        throw out_of_range("Heap is empty");
+
+    stringstream ss;
+    ss << "[";
+    for(size_t i = 0 ; i < size() ; ++i ){
+        if (i > 0)
+            ss << ", ";
+        ss << m_heap[i].GetData();
+    }
+    ss << "]";
+    return ss.str();
+}
+
+template <typename Traits>
+ostream& operator<<(ostream& os, Heap<Traits>& heap){
+    return os << heap.toString();
+}
 #endif // __HEAP_H__
