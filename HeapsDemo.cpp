@@ -23,8 +23,18 @@ void HeapDemo(){
     ofs <<  heap1 <<   endl;
     ofs.close();
 
-    // ifstream file("heap1.txt");
-    // Heap<AscendingHeapTrait<TI>> heap4;
-    // file >> heap4;
-    // cout << "Heap 4 creada con datos del heap 1: " << heap4 << endl;
+    ifstream file("heap1.txt");
+    Heap<AscendingHeapTrait<TI>> heap4;
+    file >> heap4;
+    cout << "Heap 4 creada con datos del heap 1: " << heap4 << endl;
+    
+    heap3.extract();
+    cout << "Prueba funcion extract: " << heap3 <<endl;
+
+    using Node = typename AscendingHeapTrait<TI>::Node;
+    vector<Node> data = { Node(10, 1), Node(5, 2), Node(20, 3)};
+    
+    Heap<AscendingHeapTrait<TI>> heap5;
+    heap5.build_heap(data);
+    cout << heap5;
 }

@@ -32,6 +32,11 @@ struct DescendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
 {
 };
 
+template <typename T>
+ostream &operator<<(ostream &os, const HeapNode<T> &node){
+    return os << "(" <<node.GetData() << ", " << node.GetRef() << ")";
+}
+
 // Revisar: https://www.cs.usfca.edu/~galles/visualization/Heap.html
 // Pero en este ejercicio empezamos el la posicion [0]
 template <typename Traits>
@@ -67,12 +72,20 @@ public:
         heapify_up(m_heap.size() - 1);
     }
 
+    void build_heap(const vector<Node>& data){
+        scoped_lock<mutex> lock(m_mtx);
+
+        m_heap = data;
+        for (TI i = m_heap.size()/2 - 1; i >= 0; --i) 
+            heapify_down(i);
+    }
+
     // Revisar completamente
     void extract() {
         scoped_lock<mutex> lock(m_mtx);
-        if (m_heap.empty()) {
+        if (m_heap.empty()) 
             throw out_of_range("Heap is empty");
-        }
+        
         if (m_heap.size() == 1) {
             m_heap.pop_back();
             return;
@@ -84,20 +97,18 @@ public:
 
     value_type peek_min() {
         scoped_lock<mutex> lock(m_mtx);
-        if (m_heap.empty()) {
+        if (m_heap.empty()) 
             throw out_of_range("Heap is empty");
-        }
         return m_heap[0].GetData();
     }
 
-    bool empty() const {
+    bool empty() const{
         return m_heap.empty();
     }
 
     size_t size() const {
         return m_heap.size();
     }
-
     virtual string  toString();
 
 private:
@@ -115,17 +126,16 @@ private:
     }
 
     void heapify_down(size_t index) {
-        scoped_lock<mutex> lock(m_mtx);
+        //scoped_lock<mutex> lock(m_mtx); -> No funciona porque heapify_down es recursivo
         size_t left = 2 * index + 1;
         size_t right = 2 * index + 2;
         size_t smallest = index;
 
-        if (left < m_heap.size() && m_comp(m_heap[left].GetData(), m_heap[smallest].GetData()) ) {
+        if (left < m_heap.size() && m_comp(m_heap[left].GetData(), m_heap[smallest].GetData()) )
             smallest = left;
-        }
-        if (right < m_heap.size() && m_comp(m_heap[right].GetData(), m_heap[smallest].GetData()) ) {
+        
+        if (right < m_heap.size() && m_comp(m_heap[right].GetData(), m_heap[smallest].GetData()) )
             smallest = right;
-        }
 
         if (smallest != index) {
             swap(m_heap[index], m_heap[smallest]);
@@ -146,7 +156,7 @@ string  Heap<Traits>::toString() {
     for(size_t i = 0 ; i < size() ; ++i ){
         if (i > 0)
             ss << ", ";
-        ss << m_heap[i].GetData();
+        ss << m_heap[i];
     }
     ss << "]";
     return ss.str();
@@ -157,8 +167,23 @@ ostream& operator<<(ostream& os, Heap<Traits>& heap){
     return os << heap.toString();
 }
 
-// template <typename Traits>
-// ostream& operator>>(ostream& os, Heap<Traits>& heap){
-//     //return os << heap.toString();
-// }
+template <typename Traits>
+istream& operator>>(istream& is, Heap<Traits>& heap){
+    using value_type = typename Heap<Traits>::value_type;
+    string line;
+    getline(is, line);
+
+    for (char& c : line){
+        if (c == '[' || c == ']' || c == '(' || c == ')' || c == ',')
+            c = ' ';
+    }
+    value_type value;
+    Ref ref;
+    stringstream ss(line);
+
+    while (ss >> value >> ref)
+        heap.insert(value, ref);
+    
+    return is;
+}
 #endif // __HEAP_H__
