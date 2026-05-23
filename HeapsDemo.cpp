@@ -1,4 +1,5 @@
 #include <vector>
+#include <fstream>
 #include "containers/heap.h"
 
 using namespace std;
@@ -16,5 +17,14 @@ void HeapDemo(){
 
     Heap<DescendingHeapTrait<TI>> heap3 = move(heap2);
     cout << heap3 <<endl;
-    cout << heap2 <<endl;
+
+    ofstream ofs;
+    ofs.open("heap1.txt");
+    ofs <<  heap1 <<   endl;
+    ofs.close();
+
+    // ifstream file("heap1.txt");
+    // Heap<AscendingHeapTrait<TI>> heap4;
+    // file >> heap4;
+    // cout << "Heap 4 creada con datos del heap 1: " << heap4 << endl;
 }

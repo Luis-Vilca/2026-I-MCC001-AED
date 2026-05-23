@@ -156,4 +156,9 @@ template <typename Traits>
 ostream& operator<<(ostream& os, Heap<Traits>& heap){
     return os << heap.toString();
 }
+
+// template <typename Traits>
+// ostream& operator>>(ostream& os, Heap<Traits>& heap){
+//     //return os << heap.toString();
+// }
 #endif // __HEAP_H__
