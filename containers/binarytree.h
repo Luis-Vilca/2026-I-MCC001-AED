@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include "general_iterator.h"
+#include "basetrait.h"
 #include "../types.h"
 
 template <typename Container>
@@ -50,27 +51,30 @@ protected:
 public:
     BinaryTreeNode(const value_type& data, const Ref& ref, 
         NodePtr left = nullptr, NodePtr right = nullptr)
-        : m_data(data), m_ref(ref)
+        : m_data(data), m_ref(ref), m_pParent(nullptr), m_right(nullptr)
     {
         m_pChild[0] = left;
         m_pChild[1] = right;
+        if (left)
+            left->m_pParent = this;
+        if (right)
+            right->m_pParent = this;
     }
     // copy constructor ... tiene error
     BinaryTreeNode(const BinaryTreeNode& other)
         : m_data(other.m_data), m_ref(other.m_ref)
     {
-        m_pChild[0] = other.m_pChild[0];
-        m_pChild[1] = other.m_pChild[1];
+        m_pChild[0] = other.m_pChild[0] ? new Node(*other.m_pChild[0]) : nullptr;
+        m_pChild[1] = other.m_pChild[1] ? new Node(*other.m_pChild[1]) : nullptr;
+        updateChildrenParent();
     }
     // Corregir con exchange
     BinaryTreeNode(BinaryTreeNode&& other) noexcept
-        : m_data(std::move(other.m_data)), m_ref(std::move(other.m_ref))
+        : m_data(move(other.m_data)), m_ref(move(other.m_ref))
     {
-        m_pChild[0] = other.m_pChild[0];
-        other.m_pChild[0] = nullptr;
-
-        m_pChild[1] = other.m_pChild[1];
-        other.m_pChild[1] = nullptr;
+        m_pChild[0] = exchange(other.m_pChild[0], nullptr);
+        m_pChild[1] = exchange(other.m_pChild[1], nullptr);
+        updateChildrenParent();
     }
     ~BinaryTreeNode() {
         delete m_pChild[0];
@@ -86,18 +90,27 @@ public:
 
     NodePtr         getChild(size_t pos) const { return m_pChild[pos]; }
     NodePtr&        getChildRef(size_t pos)    { return m_pChild[pos]; }
-    void            setChild(size_t pos, NodePtr pChild) { m_pChild[pos] = pChild; }
-
+    void            setChild(size_t pos, NodePtr pChild) {  m_pChild[pos] = pChild; 
+                                                            if (pChild)
+                                                                pChild->m_pParent = this;
+                                                         }                                                  
     string to_string() const {
         stringstream ss;
         ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
         return ss.str();
     }
+    void updateChildrenParent() {
+        if (m_pChild[0])
+            m_pChild[0]->m_pParent = this;
+
+        if (m_pChild[1])
+            m_pChild[1]->m_pParent = this;
+    }
     // Cuidado: en el disco hay posiciones dentro del archivo,
     //          en memoria hay punteros
     friend ostream& operator<<(ostream& os, 
         const BinaryTreeNode& node) {
-        os << node.to_string();
+        os << node.m_data << ' ' << node.m_ref;
         return os;
     }
 
@@ -105,11 +118,8 @@ public:
     //          en memoria hay punteros
     friend istream& operator>>(istream& is, 
         BinaryTreeNode& node) {
-        string line;
-        if (getline(is, line)) {
-            stringstream ss(line);
-            ss >> node.m_data >> node.m_ref;
-        }
+        
+        is >> node.m_data >> node.m_ref;
         return is;
     }
 };
@@ -136,6 +146,7 @@ class BinaryTree{
 public:
     using value_type = typename Traits::value_type;
     using Node       = typename Traits::Node;
+    using NodePtr    = typename Traits::Node*;
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
 
@@ -144,26 +155,36 @@ public:
 
 protected:
     NodePtr m_pRoot = nullptr;
+    Comp m_comp;
 public:
     BinaryTree() {}
-    BinaryTree(const BinaryTree &other){ // Copy constructor
+    BinaryTree(const BinaryTree &other)
+        : m_comp(other.m_comp) { // Copy constructor
 
+        m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
     };
-    BinaryTree(BinaryTree &&other){ // Move constructor
+    BinaryTree(BinaryTree &&other)
+        : m_comp(other.m_comp){ // Move constructor
+        
+        m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
+    };
 
+    ~BinaryTree() {
+        delete m_pRoot;
     };
 
     void insert(const value_type &value, Ref ref){
         internal_insert(m_pRoot, value, ref);
     }
 private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref){
+    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
         if( !pNode ){
             pNode = new Node(value, ref);
+            pNode -> m_Parent = parent;
             return;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->m_pChild[pos], value, ref);
+        internal_insert(pNode->getChildrenRef(pos), value, ref, pNode);
     }
 };
 
