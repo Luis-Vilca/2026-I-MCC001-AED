@@ -36,6 +36,62 @@ public:
     }
 };
 
+template <typename Container>
+class BinaryTreeForwardPreorderIterator : public general_iterator<Container, 
+                                         BinaryTreeForwardPreorderIterator<Container>>{
+    using MySelf = BinaryTreeForwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    // TODO: Completar el operator++
+    MySelf& operator++(){
+        // this->m_pNode = this->m_pNode->getNext();
+        return *this;
+    }
+};
+
+template <typename Container>
+class BinaryTreeBackwardPreorderIterator : public general_iterator<Container, 
+                                         BinaryTreeBackwardPreorderIterator<Container>>{
+    using MySelf = BinaryTreeBackwardPreorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    // TODO: Completar el operator++
+    MySelf& operator++(){
+        // this->m_pNode = this->m_pNode->getNext();
+        return *this;
+    }
+};
+
+template <typename Container>
+class BinaryTreeForwardPostorderIterator : public general_iterator<Container, 
+                                         BinaryTreeForwardPostorderIterator<Container>>{
+    using MySelf = BinaryTreeForwardPostorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    // TODO: Completar el operator++
+    MySelf& operator++(){
+        // this->m_pNode = this->m_pNode->getNext();
+        return *this;
+    }
+};
+
+template <typename Container>
+class BinaryTreeBackwardPostorderIterator : public general_iterator<Container, 
+                                         BinaryTreeBackwardPostorderIterator<Container>>{
+    using MySelf = BinaryTreeBackwardPostorderIterator<Container>;
+    using Parent = general_iterator<Container, MySelf>;
+    using Parent::Parent;
+public:
+    // TODO: Completar el operator++
+    MySelf& operator++(){
+        // this->m_pNode = this->m_pNode->getNext();
+        return *this;
+    }
+};
+
 template <typename T>
 class BinaryTreeNode{
 public:
@@ -93,7 +149,9 @@ public:
     void            setChild(size_t pos, NodePtr pChild) {  m_pChild[pos] = pChild; 
                                                             if (pChild)
                                                                 pChild->m_pParent = this;
-                                                         }                                                  
+                                                         }
+    void            setParent(NodePtr pParent) { m_pParent = pParent; }
+    NodePtr         getParent() const { return m_pParent; }
     string to_string() const {
         stringstream ss;
         ss << "Node(data: " << m_data << ", ref: " << m_ref << ")";
@@ -178,15 +236,44 @@ public:
     }
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
+        
         if( !pNode ){
             pNode = new Node(value, ref);
-            pNode -> m_Parent = parent;
+            pNode->setParent(parent);
             return;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildrenRef(pos), value, ref, pNode);
+        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
     }
 };
+
+// template <typename Traits>
+// ostream& operator<<(ostream& os, BinaryTree<Traits>& tree){
+//     return os << tree.toString();
+// }
+
+// template <typename Traits>
+// istream& operator>>(istream& is, BinaryTree<Traits>& tree){
+//     using value_type = typename LinkedList<Traits>::value_type;
+//     string line;
+
+//     getline(is, line);
+
+//     for (char& c : line){
+//         if (c == '[' || c == ']' || c == '(' || c == ')' || c == ',')
+//             c = ' ';
+//     }
+
+//     value_type value;
+//     Ref ref;
+//     stringstream ss(line);
+
+//     while (ss >> value >> ref){
+//         list.push_back(value, ref);
+//     }
+
+//     return is;
+// }
 
 
 

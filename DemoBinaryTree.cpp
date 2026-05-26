@@ -25,4 +25,10 @@ void BinaryTreeDemo(){
 
     cout << nodo3 << endl;
 
+    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree1;
+    tree1.insert(10,5);
+    tree1.insert(20,6);
+    tree1.insert(11,7);
+    tree1.insert(21,8);
+
 }
