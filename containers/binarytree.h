@@ -6,6 +6,7 @@
 #include <sstream>
 #include "general_iterator.h"
 #include "basetrait.h"
+#include "../foreach.h"
 #include "../types.h"
 
 template <typename Container>
@@ -17,7 +18,27 @@ class BinaryTreeForwardInorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        
+        using NodePtr = typename Container::NodePtr;
+        NodePtr node = this->m_pNode;
+
+        if (!node)
+            return *this;
+        if (node->getChild(1)) {
+            node = node->getChild(1);
+            while (node->getChild(0))
+                node = node->getChild(0);
+        }
+        else {
+            NodePtr parent = node->getParent();
+            while (parent && node == parent->getChild(1))
+            {
+                node = parent;
+                parent = parent->getParent();
+            }
+            node = parent;
+        }
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -31,7 +52,26 @@ class BinaryTreeBackwardInorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        using NodePtr = typename Container::NodePtr;
+        NodePtr node = this->m_pNode;
+
+        if (!node)
+            return *this;
+        if (node->getChild(0)) {
+            node = node->getChild(0);
+            while (node->getChild(1))
+                node = node->getChild(1);
+        }
+        else {
+            NodePtr parent = node->getParent();
+            while (parent && node == parent->getChild(0))
+            {
+                node = parent;
+                parent = parent->getParent();
+            }
+            node = parent;
+        }
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -45,7 +85,32 @@ class BinaryTreeForwardPreorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        using NodePtr = typename Container::NodePtr;
+        NodePtr node = this->m_pNode;
+
+        if (!node)
+            return *this;
+        if (node->getChild(0)) 
+            node = node->getChild(0);
+        else if (node->getChild(1))
+            node = node->getChild(1);
+        else {
+            NodePtr parent =
+                node->getParent();
+
+            while (parent) {
+                if (node == parent->getChild(0) && parent->getChild(1))
+                {
+                    node = parent->getChild(1);
+                    break;
+                }
+                node = parent;
+                parent = parent->getParent();
+            }
+            if (!parent)
+                node = nullptr;
+        }
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -59,7 +124,34 @@ class BinaryTreeBackwardPreorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        using NodePtr = typename Container::NodePtr;
+        NodePtr node = this->m_pNode;
+
+        if (!node)
+            return *this;
+        NodePtr parent = node->getParent();
+        if (!parent) {
+            this->m_pNode = nullptr;
+            return *this;
+        }
+        if (node == parent->getChild(1) &&
+            parent->getChild(0))
+        {
+            node = parent->getChild(0);
+            while (true) {
+                if (node->getChild(1))
+                    node = node->getChild(1);
+                else if (node->getChild(0))
+                    node = node->getChild(0);
+                else
+                    break;
+            }
+        }
+
+        else {
+            node = parent;
+        }
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -73,7 +165,36 @@ class BinaryTreeForwardPostorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        using NodePtr =
+        typename Container::NodePtr;
+
+        NodePtr node = this->m_pNode;
+        if (!node)
+            return *this;
+        NodePtr parent = node->getParent();
+
+        if (!parent) {
+            this->m_pNode = nullptr;
+            return *this;
+        }
+
+        if (node == parent->getChild(0) &&
+            parent->getChild(1))
+        {
+            node = parent->getChild(1);
+            while (true) {
+                if (node->getChild(0))
+                    node = node->getChild(0);
+                else if (node->getChild(1))
+                    node = node->getChild(1);
+                else
+                    break;
+            }
+        }
+        else 
+            node = parent;
+
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -87,7 +208,31 @@ class BinaryTreeBackwardPostorderIterator : public general_iterator<Container,
 public:
     // TODO: Completar el operator++
     MySelf& operator++(){
-        // this->m_pNode = this->m_pNode->getNext();
+        using NodePtr = typename Container::NodePtr;
+        NodePtr node = this->m_pNode;
+
+        if (!node)
+            return *this;
+        if (node->getChild(1)) 
+            node = node->getChild(1);
+        else if (node->getChild(0))
+            node = node->getChild(0);
+        else {
+            NodePtr parent = node->getParent();
+            while (parent) {
+                if (node == parent->getChild(1) &&
+                    parent->getChild(0))
+                {
+                    node = parent->getChild(0);
+                    break;
+                }
+                node = parent;
+                parent = parent->getParent();
+            }
+            if (!parent)
+                node = nullptr;
+        }
+        this->m_pNode = node;
         return *this;
     }
 };
@@ -208,8 +353,12 @@ public:
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
 
-    using forward_inorder_iterator  = BinaryTreeForwardInorderIterator<MySelf>;
-    using backward_inorder_iterator = BinaryTreeBackwardInorderIterator<MySelf>;
+    using forward_inorder_iterator    = BinaryTreeForwardInorderIterator<MySelf>;
+    using backward_inorder_iterator   = BinaryTreeBackwardInorderIterator<MySelf>;
+    using forward_preorder_iterator   = BinaryTreeForwardPreorderIterator<MySelf>;
+    using backward_preorder_iterator  = BinaryTreeBackwardPreorderIterator<MySelf>;
+    using forward_postorder_iterator  = BinaryTreeForwardPostorderIterator<MySelf>;
+    using backward_postorder_iterator = BinaryTreeBackwardPostorderIterator<MySelf>;
 
 protected:
     NodePtr m_pRoot = nullptr;
@@ -234,6 +383,79 @@ public:
     void insert(const value_type &value, Ref ref){
         internal_insert(m_pRoot, value, ref);
     }
+    
+    forward_inorder_iterator begin() {
+        NodePtr node = m_pRoot;
+        while (node && node->getChild(0))
+            node = node->getChild(0);
+        return forward_inorder_iterator(this, node);
+    }
+    
+    forward_inorder_iterator end() {
+        return forward_inorder_iterator(this, nullptr);
+    }
+    
+    backward_inorder_iterator rbegin() {
+        NodePtr node = m_pRoot;
+        while (node && node->getChild(1))
+            node = node->getChild(1);
+        return backward_inorder_iterator(this, node);
+    }
+    
+    backward_inorder_iterator rend() {
+        return backward_inorder_iterator(this, nullptr);
+    }
+    
+    forward_preorder_iterator begin_preorder() {
+        return forward_preorder_iterator(this, m_pRoot);
+    }
+    
+    forward_preorder_iterator end_preorder() {
+        return forward_preorder_iterator(this, nullptr);
+    }
+    
+    backward_preorder_iterator rbegin_preorder() {
+        NodePtr node = m_pRoot;
+        while (node) {
+            if (node->getChild(1))
+                node = node->getChild(1);
+            else if (node->getChild(0))
+                node = node->getChild(0);
+            else
+                break;
+        }
+        return backward_preorder_iterator(this, node);
+    }
+    
+    backward_preorder_iterator rend_preorder() {
+        return backward_preorder_iterator(this, nullptr);
+    }
+    
+    forward_postorder_iterator begin_postorder() {
+        NodePtr node = m_pRoot;
+        while (node) {
+            if (node->getChild(0))
+                node = node->getChild(0);
+            else if (node->getChild(1))
+                node = node->getChild(1);
+            else
+                break;
+        }
+        return forward_postorder_iterator(this, node);
+    }
+
+    forward_postorder_iterator end_postorder() {
+        return forward_postorder_iterator(this, nullptr);
+    }
+
+    backward_postorder_iterator rbegin_postorder(){
+        return backward_postorder_iterator(this, m_pRoot);
+    }
+
+    backward_postorder_iterator rend_postorder(){
+        return backward_postorder_iterator(this, nullptr);
+    }
+
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
         

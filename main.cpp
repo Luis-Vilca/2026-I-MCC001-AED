@@ -2,7 +2,7 @@
 #include "macros.h"
 #include "lists.h"
 #include "binarytrees.h"
-// #include "containers/vector.h"
+#include "containers/vector.h"
 
 using namespace std;
 
@@ -30,9 +30,10 @@ int main() {
     cout << "i6: " << (int)i6 << endl;
 
     // DemoMacros();
-    //DemoVector();
+    DemoVector();
     // DemoConcurrentVector();
     // ListsDemo();
+    cout<<endl<<"Binary tree Demo: ";
     BinaryTreeDemo();
     return 0;
 }

@@ -27,11 +27,11 @@ public:
     MySelf operator++() { this->m_pNode--; return *this; }
 };
 
-template <typename Traits>
+template <typename T>
 struct VectorNode{
-    using value_type = typename Traits::value_type;
-
-    value_type   m_data;
+    
+    using value_type = T;
+    value_type m_data;
     Ref          m_ref;
     VectorNode() : m_data(value_type()), m_ref(Ref()) {}
     VectorNode(value_type data, Ref ref) : m_data(data), m_ref(ref) {}

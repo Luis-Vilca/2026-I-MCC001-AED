@@ -3,6 +3,11 @@
 
 using namespace std;
 
+template <typename Node>
+void Print(Node &value, ostream& os){
+    os << value << ",";
+}
+
 void BinaryTreeDemo(){
     BinaryTreeNode<TI> nodo1 = BinaryTreeNode(10, 5);
     BinaryTreeNode<TI>* nodo2 = new BinaryTreeNode<TI>(20, 6);
@@ -30,5 +35,30 @@ void BinaryTreeDemo(){
     tree1.insert(20,6);
     tree1.insert(11,7);
     tree1.insert(21,8);
+    tree1.insert(8,11);
+
+    cout << "Prueba iterador forward in order: " << endl;
+    for(auto it = tree1.begin();it != tree1.end();++it)
+        cout << *it << endl;
+
+    cout << "Prueba iterador backward in order: " << endl;
+    for(auto it = tree1.rbegin(); it != tree1.rend();++it)
+        cout << *it << endl;
+
+    cout << "Prueba iterador forward preorder: " << endl;
+    for(auto it = tree1.begin_preorder();it != tree1.end_preorder();++it)
+        cout << *it << endl;
+
+    cout << "Prueba iterador backward preorder: " << endl;
+    for(auto it = tree1.rbegin_preorder();it != tree1.rend_preorder();++it)
+        cout << *it << endl;
+    
+    cout << "Prueba iterador forward postorder: " << endl;
+    for(auto it = tree1.begin_postorder();it != tree1.end_postorder();++it)
+        cout << *it << endl;
+
+    cout << "Prueba iterador backward postorder: " << endl;
+    for(auto it = tree1.rbegin_postorder();it != tree1.rend_postorder();++it)
+        cout << *it << endl;
 
 }
