@@ -24,9 +24,6 @@ bool IsEven(Node& node)
 }
 
 void BinaryTreeDemo(){
-    BinaryTreeNode<TI> nodo1 = BinaryTreeNode(10, 5);
-    BinaryTreeNode<TI>* nodo2 = new BinaryTreeNode<TI>(20, 6);
-    nodo1.setChild(0, nodo2);
     
     BinaryTree<AscendingBinaryTreeListTrait<TI>> tree1;
     tree1.insert(10,5);
@@ -65,7 +62,7 @@ void BinaryTreeDemo(){
     PrintTree(tree2.rbegin(), tree2.rend());
 
 
-    auto it = FirstThat(tree2.begin(), tree2.end(), IsEven<BinaryTreeNode<TI>>);
+    auto it = FirstThat(tree2.begin(), tree2.end(), IsEven<BinaryTree<DescendingBinaryTreeListTrait<TI>>::BinaryTreeNode>);
     if(it != tree2.end()){
         cout << "Primer par: "
             << *it << endl;
