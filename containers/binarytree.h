@@ -461,8 +461,6 @@ public:
         return backward_postorder_iterator(this, nullptr);
     }
 
-    mutex& getMutex() { return m_mtx2;};
-
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
         
@@ -473,6 +471,23 @@ private:
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
         internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+    }
+public:
+    template <typename Iterator, typename Func, typename... Args>
+    void ForEach(Iterator begin, Iterator end, Func func, Args &&... args){
+        scoped_lock<mutex> lock(m_mtx);
+        for (auto it = begin; it != end; ++it)
+            func(*it, forward<Args>(args)...);
+    }
+
+    template <typename Iterator, typename Func, typename... Args>
+    Iterator FirstThat(Iterator begin, Iterator end, Func func, Args &&... args){
+        scoped_lock<mutex> lock(m_mtx);
+        for (auto it = begin; it != end; ++it){
+            if (func(*it, forward<Args>(args)...))
+                return it;
+        }
+        return end;
     }
 };
 

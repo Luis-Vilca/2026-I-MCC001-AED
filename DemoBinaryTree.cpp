@@ -12,7 +12,6 @@ void PrintTree(Iterator begin, Iterator end, ostream& os = cout)
 template <typename Tree>
 void Read(Tree& tree, istream& is)
 {
-    scoped_lock lock(tree.getMutex());
     typename Tree::Node node(0,0);
     while(is >> node)
         tree.insert(node.getData(), node.getRef());
@@ -64,6 +63,7 @@ void BinaryTreeDemo(){
     
     cout << "Prueba operadores sobrecargados: " << endl;
     PrintTree(tree2.rbegin(), tree2.rend());
+
 
     auto it = FirstThat(tree2.begin(), tree2.end(), IsEven<BinaryTreeNode<TI>>);
     if(it != tree2.end()){
