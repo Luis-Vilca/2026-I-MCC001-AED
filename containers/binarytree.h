@@ -4,6 +4,7 @@
 #include <cstddef>   // size_t
 #include <string>
 #include <sstream>
+#include <mutex>
 #include "general_iterator.h"
 #include "basetrait.h"
 #include "../foreach.h"
@@ -313,15 +314,13 @@ public:
     //          en memoria hay punteros
     friend ostream& operator<<(ostream& os, 
         const BinaryTreeNode& node) {
-        os << node.m_data << ' ' << node.m_ref;
+            os << node.getData() << ' ' << node.getRef();
         return os;
     }
-
     // Cuidado: en el disco hay posiciones dentro del archivo,
     //          en memoria hay punteros
     friend istream& operator>>(istream& is, 
         BinaryTreeNode& node) {
-        
         is >> node.m_data >> node.m_ref;
         return is;
     }
@@ -363,24 +362,30 @@ public:
 protected:
     NodePtr m_pRoot = nullptr;
     Comp m_comp;
+    mutex m_mtx;
+    mutex m_mtx2;
 public:
     BinaryTree() {}
     BinaryTree(const BinaryTree &other)
         : m_comp(other.m_comp) { // Copy constructor
 
+        scoped_lock<mutex> lock(m_mtx2);
         m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
     };
     BinaryTree(BinaryTree &&other)
         : m_comp(other.m_comp){ // Move constructor
         
+        scoped_lock<mutex> lock(m_mtx);
         m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
     };
 
     ~BinaryTree() {
+        scoped_lock<mutex> lock(m_mtx);
         delete m_pRoot;
     };
 
     void insert(const value_type &value, Ref ref){
+        scoped_lock<mutex> lock(m_mtx);
         internal_insert(m_pRoot, value, ref);
     }
     
@@ -456,6 +461,8 @@ public:
         return backward_postorder_iterator(this, nullptr);
     }
 
+    mutex& getMutex() { return m_mtx2;};
+
 private:
     void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
         
@@ -468,36 +475,5 @@ private:
         internal_insert(pNode->getChildRef(pos), value, ref, pNode);
     }
 };
-
-// template <typename Traits>
-// ostream& operator<<(ostream& os, BinaryTree<Traits>& tree){
-//     return os << tree.toString();
-// }
-
-// template <typename Traits>
-// istream& operator>>(istream& is, BinaryTree<Traits>& tree){
-//     using value_type = typename LinkedList<Traits>::value_type;
-//     string line;
-
-//     getline(is, line);
-
-//     for (char& c : line){
-//         if (c == '[' || c == ']' || c == '(' || c == ')' || c == ',')
-//             c = ' ';
-//     }
-
-//     value_type value;
-//     Ref ref;
-//     stringstream ss(line);
-
-//     while (ss >> value >> ref){
-//         list.push_back(value, ref);
-//     }
-
-//     return is;
-// }
-
-
-
 
 #endif // __BINARY_TREE_H__

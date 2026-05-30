@@ -3,9 +3,25 @@
 
 using namespace std;
 
+template <typename Iterator>
+void PrintTree(Iterator begin, Iterator end, ostream& os = cout)
+{
+    ForEach(begin, end, [&os](auto& node){ os << node << '\n';});
+}
+
+template <typename Tree>
+void Read(Tree& tree, istream& is)
+{
+    scoped_lock lock(tree.getMutex());
+    typename Tree::Node node(0,0);
+    while(is >> node)
+        tree.insert(node.getData(), node.getRef());
+}
+
 template <typename Node>
-void Print(Node &value, ostream& os){
-    os << value << ",";
+bool IsEven(Node& node)
+{
+    return node.getData() % 2 == 0;
 }
 
 void BinaryTreeDemo(){
@@ -13,23 +29,6 @@ void BinaryTreeDemo(){
     BinaryTreeNode<TI>* nodo2 = new BinaryTreeNode<TI>(20, 6);
     nodo1.setChild(0, nodo2);
     
-    cout << nodo1 << endl;
-    cout << *nodo2 << endl;
-    cout << nodo1.getChild(0) <<endl;
-    cout << nodo1.getChild(1) <<endl;
-
-    ofstream ofs;
-    ofs.open("node1.txt");
-    ofs << nodo1 << endl;
-    ofs.close();
-    
-    ifstream file("node1.txt");
-    BinaryTreeNode<TI> nodo3 = BinaryTreeNode(0, 0);
-    file >> nodo3;
-    file.close();
-
-    cout << nodo3 << endl;
-
     BinaryTree<AscendingBinaryTreeListTrait<TI>> tree1;
     tree1.insert(10,5);
     tree1.insert(20,6);
@@ -38,27 +37,42 @@ void BinaryTreeDemo(){
     tree1.insert(8,11);
 
     cout << "Prueba iterador forward in order: " << endl;
-    for(auto it = tree1.begin();it != tree1.end();++it)
-        cout << *it << endl;
+    PrintTree(tree1.begin(), tree1.end());
 
     cout << "Prueba iterador backward in order: " << endl;
-    for(auto it = tree1.rbegin(); it != tree1.rend();++it)
-        cout << *it << endl;
+    PrintTree(tree1.rbegin(), tree1.rend());
 
     cout << "Prueba iterador forward preorder: " << endl;
-    for(auto it = tree1.begin_preorder();it != tree1.end_preorder();++it)
-        cout << *it << endl;
+    PrintTree(tree1.begin_preorder(), tree1.end_preorder());
 
     cout << "Prueba iterador backward preorder: " << endl;
-    for(auto it = tree1.rbegin_preorder();it != tree1.rend_preorder();++it)
-        cout << *it << endl;
-    
+    PrintTree(tree1.rbegin_preorder(), tree1.rend_preorder());
+
     cout << "Prueba iterador forward postorder: " << endl;
-    for(auto it = tree1.begin_postorder();it != tree1.end_postorder();++it)
-        cout << *it << endl;
+    PrintTree(tree1.begin_postorder(), tree1.end_postorder());
 
     cout << "Prueba iterador backward postorder: " << endl;
-    for(auto it = tree1.rbegin_postorder();it != tree1.rend_postorder();++it)
-        cout << *it << endl;
+    PrintTree(tree1.rbegin_postorder(), tree1.rend_postorder());
+
+    ofstream file("tree.txt");
+    PrintTree(tree1.begin(), tree1.end(), file);
+    file.close();
+
+    ifstream ifs("tree.txt");
+    BinaryTree<DescendingBinaryTreeListTrait<TI>> tree2;
+    Read(tree2, ifs);
+    
+    cout << "Prueba operadores sobrecargados: " << endl;
+    PrintTree(tree2.rbegin(), tree2.rend());
+
+    auto it = FirstThat(tree2.begin(), tree2.end(), IsEven<BinaryTreeNode<TI>>);
+    if(it != tree2.end()){
+        cout << "Primer par: "
+            << *it << endl;
+    }
+    else
+        cout << "No existe numero par\n";
+    
+    //Falta probar el move constructor, el copy constructor, destructor seguro
 
 }
