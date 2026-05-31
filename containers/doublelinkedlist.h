@@ -2,6 +2,14 @@
 #define __DOUBLELINKEDLIST_H__
 #include "linkedlist.h"
 
+//Cambiar push back por insert en las otras funciones
+//Modificar constructor copia usando el de linkedlist
+//El recorrido debe ser modificado porque es muy ineficiente
+//El insert estaba mal adaptado faltaba que corrija su m_ptail
+//Insert debe retornar el punto final que ha agregado
+//El insert puede mejorarse si es ascendente se usa pushback si es descdente se usa pushfront 
+//Para probar el destructor se debe usar { } en vez del destructor de forma explicita list.~() <- esto no va
+
 template <typename T>
 class DLLNode :  public LLNode<T>{
 public:
