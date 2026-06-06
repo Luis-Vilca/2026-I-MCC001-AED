@@ -29,6 +29,8 @@ void AVLTreeDemo(){
     avl1.insert(10, 11);
     avl1.insert(20, 12);
     avl1.insert(5,  13);
+    avl1.insert(3,  14);
+    avl1.insert(1,  15);
 
     cout << "Prueba iterador forward in order: " << endl;
     PrintTree(avl1.begin(), avl1.end());

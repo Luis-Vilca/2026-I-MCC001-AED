@@ -27,47 +27,35 @@ public:
     using NodePtr    = AVLNode*;
  
     //Constructor y destructor se heredan de BinaryTree
- 
-    // --------------------------------------------------------
-    //  insert  (sobreescribe el de BinaryTree)
-    // --------------------------------------------------------
+
     void insert(const value_type& value, Ref ref) {
-        scoped_lock<mutex> lock(this->m_mtx);
-        this->m_pRoot = avl_insert(NodePtr(this->m_pRoot), value, ref, nullptr);
+        scoped_lock<mutex> lock(this -> m_mtx);
+        NodePtr inserted = static_cast<NodePtr>(BinaryTree<Traits>::internal_insert(this->m_pRoot, value, ref));
+        after_insert(inserted);
+    }
+
+protected:
+    NodePtr createNode(const value_type& value, Ref ref) override {
+        return new AVLNode(value, ref);
     }
 
 private:
-    // ----------------------------------------------------------
-    //  Utilidades de altura y factor de balance
-    // ----------------------------------------------------------
+
     static size_t height(NodePtr n) {
         return n ? n->m_height : 0;
     }
  
-    static void update_height(NodePtr n) {
-        if (n)
-            n->m_height = 1 + max(height(NodePtr(n->getChild(0))),
-                                  height(NodePtr(n->getChild(1))));
+    static void update_height(NodePtr pNode) {
+        if (pNode)
+            pNode->m_height = 1 + max(height(NodePtr(pNode->getChild(0))),
+                                  height(NodePtr(pNode->getChild(1))));
     }
- 
-    // balance > 0  → pesado a la izquierda
-    // balance < 0  → pesado a la derecha
+
     static TI balance_factor(NodePtr n) {
-        if (!n) return 0;
-        return height(NodePtr(n->getChild(0))) - height(NodePtr(n->getChild(1)));
+        if (!pNode) return 0;
+        return height(NodePtr(pNode->getChild(0))) - height(NodePtr(pNode->getChild(1)));
     }
  
-    // ----------------------------------------------------------
-    //  Rotaciones
-    //
-    //      rotate_right(y)          rotate_left(x)
-    //
-    //        y                x              x          y
-    //       / \              / \            / \        / \
-    //      x   T3    =>    T1   y    =>   T1  T2  =>  x  T3
-    //     / \                  / \
-    //   T1  T2               T2  T3
-    // ----------------------------------------------------------
     NodePtr rotate_right(NodePtr y) {
         NodePtr x   = NodePtr(y->getChild(0));
         NodePtr T2 = NodePtr(x->getChild(1));
@@ -76,12 +64,10 @@ private:
         x->setChild(1, y);
         y->setChild(0, T2);
  
-        // El padre de x pasa a ser el antiguo padre de y
         x->setParent(y->getParent());
         y->setParent(x);
         if (T2) T2->setParent(y);
- 
-        // Actualizar alturas (primero y, luego x)
+
         update_height(y);
         update_height(x);
         return x;   // nueva raíz del subárbol
@@ -91,85 +77,61 @@ private:
         NodePtr y  = NodePtr(x->getChild(1));
         NodePtr T2 = NodePtr(y->getChild(0));
  
-        // Giro
         y->setChild(0, x);
         x->setChild(1, T2);
- 
-        // Actualizar padres
+
         y->setParent(x->getParent());
         x->setParent(y);
         if (T2) T2->setParent(x);
  
-        // Actualizar alturas (primero x, luego y)
         update_height(x);
         update_height(y);
-        return y;   // nueva raíz del subárbol
+        return y;  
     }
  
-    // ----------------------------------------------------------
-    //  Rebalanceo tras inserción
-    //  Aplica las 4 rotaciones AVL clásicas según el caso.
-    // ----------------------------------------------------------
-    NodePtr rebalance(NodePtr node, const value_type& value) {
+    NodePtr rebalance(NodePtr node) {
         update_height(node);
-        int bf = balance_factor(node);
+        TI bf = balance_factor(node);
  
-        // ── Caso LL (rotación simple derecha) ─────────────────
-        if (bf > 1 &&
-            this->m_comp(value,
-                NodePtr(node->getChild(0))->getDataRef()))
+        if (bf > 1 && balance_factor(NodePtr(node->getChild(0))) >= 0)
             return rotate_right(node);
- 
-        // ── Caso RR (rotación simple izquierda) ───────────────
-        if (bf < -1 &&
-            !this->m_comp(value,
-                NodePtr(node->getChild(1))->getDataRef()))
+
+        if (bf < -1 && balance_factor(NodePtr(node->getChild(1))) <= 0)
             return rotate_left(node);
- 
-        // ── Caso LR (rotación doble: izquierda-derecha) ───────
-        if (bf > 1 &&
-            !this->m_comp(value, NodePtr(node->getChild(0))->getDataRef())) {
+
+        if (bf > 1 && balance_factor(NodePtr(node->getChild(0))) < 0) {
             node->setChild(0, rotate_left(NodePtr(node->getChild(0))));
             return rotate_right(node);
         }
- 
-        // ── Caso RL (rotación doble: derecha-izquierda) ───────
-        if (bf < -1 && this->m_comp(value,NodePtr(node->getChild(1))->getDataRef())) {
+
+        if (bf < -1 && balance_factor(NodePtr(node->getChild(1))) > 0) {
             node->setChild(1, rotate_right(NodePtr(node->getChild(1))));
             return rotate_left(node);
         }
- 
-        return node;    // ya está balanceado
+        return node;  
     }
- 
-    // ----------------------------------------------------------
-    //  avl_insert  — inserción recursiva con rebalanceo
-    //  Devuelve la (posiblemente nueva) raíz del subárbol.
-    // ----------------------------------------------------------
-    NodePtr avl_insert(NodePtr node, const value_type& value, Ref ref, NodePtr parent)
-    {
-        // 1. Inserción BST normal
-        if (!node) {
-            NodePtr n = new AVLNode(value, ref);
-            n->setParent(parent);
-            return n;
+
+    void after_insert(NodePtr node) {
+        while (node) {
+            NodePtr parent  = NodePtr(node->getParent());
+            NodePtr newNode = rebalance(node);
+
+            if (newNode != node) {
+                if (parent) {
+                    if (parent->getChild(0) == node)
+                        parent->setChild(0, newNode);
+                    else
+                        parent->setChild(1, newNode);
+                } else {
+                    this->m_pRoot = newNode;
+                }
+            }
+            node = parent;
         }
- 
-        size_t pos = !this->m_comp(value, node->getDataRef()); // 0=izq, 1=der
-        NodePtr child = avl_insert(NodePtr(node->getChild(pos)), value, ref, node);
- 
-        // Reconectar hijo (la recursión puede haber cambiado la raíz del subárbol)
-        node->setChild(pos, child);
-        child->setParent(node);
- 
-        // 2. Rebalancear en el camino de vuelta
-        return rebalance(node, value);
     }
+ 
 };
  
-// ============================================================
-//  Traits de conveniencia (espejo de los de BinaryTree)
-// ============================================================
 template <typename T>
 struct AscendingAVLTreeTrait : public AscendingBinaryTreeListTrait<T> {};
  

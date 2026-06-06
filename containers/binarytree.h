@@ -376,11 +376,11 @@ public:
         scoped_lock<mutex> lock(m_mtx2);
         m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
     };
-    BinaryTree(BinaryTree &&other)
-        : m_comp(other.m_comp){ // Move constructor
+    BinaryTree(BinaryTree &&other) { // Move constructor
         
         scoped_lock<mutex> lock(m_mtx);
-        m_pRoot = other.m_pRoot ? new Node(*other.m_pRoot) : nullptr;
+        m_comp  = move(other.m_comp);
+        m_pRoot = exchange(other.m_pRoot, nullptr);
     };
 
     ~BinaryTree() {
@@ -465,17 +465,24 @@ public:
         return backward_postorder_iterator(this, nullptr);
     }
 
-private:
-    void internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
+protected:
+
+    virtual NodePtr createNode(const value_type& value, Ref ref) {
+        return new Node(value, ref);
+    }
+
+    NodePtr internal_insert(NodePtr &pNode, const value_type &value, Ref ref, NodePtr parent = nullptr){
         
         if( !pNode ){
-            pNode = new Node(value, ref);
+            pNode = createNode(value, ref);
             pNode->setParent(parent);
-            return;
+            return pNode;
         }
         size_t pos = !m_comp(value, pNode->getDataRef());
-        internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+        NodePtr inserted = internal_insert(pNode->getChildRef(pos), value, ref, pNode);
+        return  inserted; 
     }
+
 public:
     template <typename Iterator, typename Func, typename... Args>
     void ForEach(Iterator begin, Iterator end, Func func, Args &&... args){
