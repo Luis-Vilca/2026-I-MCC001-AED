@@ -51,7 +51,7 @@ private:
                                   height(NodePtr(pNode->getChild(1))));
     }
 
-    static TI balance_factor(NodePtr n) {
+    static TI balance_factor(NodePtr pNode) {
         if (!pNode) return 0;
         return height(NodePtr(pNode->getChild(0))) - height(NodePtr(pNode->getChild(1)));
     }
