@@ -5,7 +5,10 @@
 #include <string>
 #include <sstream>
 #include <mutex>
-#include "general_iterator.h"
+#include "iterators/general_iterator.h"
+#include "iterators/inorder_iterator.h"
+#include "iterators/postorder_iterator.h"
+#include "iterators/preorder_iterator.h"
 #include "basetrait.h"
 #include "../foreach.h"
 #include "../types.h"
@@ -19,231 +22,51 @@
 //Revisar CRTP para que la clase padre pueda ver la clase hijo (para no usar static cast)
 
 template <typename Container>
-class BinaryTreeForwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeForwardInorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeForwardInorderIterator
+    : public InorderIterator<Container, 
+                             BinaryTreeForwardInorderIterator<Container>, 0, 1> {
+    using Parent = InorderIterator<Container, BinaryTreeForwardInorderIterator<Container>, 0, 1>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        
-        using NodePtr = typename Container::NodePtr;
-        NodePtr node = this->m_pNode;
-
-        if (!node)
-            return *this;
-        if (node->getChild(1)) {
-            node = node->getChild(1);
-            while (node->getChild(0))
-                node = node->getChild(0);
-        }
-        else {
-            NodePtr parent = node->getParent();
-            while (parent && node == parent->getChild(1))
-            {
-                node = parent;
-                parent = parent->getParent();
-            }
-            node = parent;
-        }
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename Container>
-class BinaryTreeBackwardInorderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardInorderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardInorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeBackwardInorderIterator
+    : public InorderIterator<Container,
+                             BinaryTreeBackwardInorderIterator<Container>, 1, 0> {
+    using Parent = InorderIterator<Container, BinaryTreeBackwardInorderIterator<Container>, 1, 0>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        using NodePtr = typename Container::NodePtr;
-        NodePtr node = this->m_pNode;
-
-        if (!node)
-            return *this;
-        if (node->getChild(0)) {
-            node = node->getChild(0);
-            while (node->getChild(1))
-                node = node->getChild(1);
-        }
-        else {
-            NodePtr parent = node->getParent();
-            while (parent && node == parent->getChild(0))
-            {
-                node = parent;
-                parent = parent->getParent();
-            }
-            node = parent;
-        }
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename Container>
-class BinaryTreeForwardPreorderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardPreorderIterator<Container>>{
-    using MySelf = BinaryTreeForwardPreorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeForwardPreorderIterator
+    : public PreorderIterator<Container,
+                              BinaryTreeForwardPreorderIterator<Container>, 0, 1> {
+    using Parent = PreorderIterator<Container, BinaryTreeForwardPreorderIterator<Container>, 0, 1>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        using NodePtr = typename Container::NodePtr;
-        NodePtr node = this->m_pNode;
-
-        if (!node)
-            return *this;
-        if (node->getChild(0)) 
-            node = node->getChild(0);
-        else if (node->getChild(1))
-            node = node->getChild(1);
-        else {
-            NodePtr parent =
-                node->getParent();
-
-            while (parent) {
-                if (node == parent->getChild(0) && parent->getChild(1))
-                {
-                    node = parent->getChild(1);
-                    break;
-                }
-                node = parent;
-                parent = parent->getParent();
-            }
-            if (!parent)
-                node = nullptr;
-        }
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename Container>
-class BinaryTreeBackwardPreorderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardPreorderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardPreorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeBackwardPreorderIterator
+    : public PreorderIterator<Container,
+                              BinaryTreeBackwardPreorderIterator<Container>, 1, 0> {
+    using Parent = PreorderIterator<Container, BinaryTreeBackwardPreorderIterator<Container>, 1, 0>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        using NodePtr = typename Container::NodePtr;
-        NodePtr node = this->m_pNode;
-
-        if (!node)
-            return *this;
-        NodePtr parent = node->getParent();
-        if (!parent) {
-            this->m_pNode = nullptr;
-            return *this;
-        }
-        if (node == parent->getChild(1) &&
-            parent->getChild(0))
-        {
-            node = parent->getChild(0);
-            while (true) {
-                if (node->getChild(1))
-                    node = node->getChild(1);
-                else if (node->getChild(0))
-                    node = node->getChild(0);
-                else
-                    break;
-            }
-        }
-
-        else {
-            node = parent;
-        }
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename Container>
-class BinaryTreeForwardPostorderIterator : public general_iterator<Container, 
-                                         BinaryTreeForwardPostorderIterator<Container>>{
-    using MySelf = BinaryTreeForwardPostorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeForwardPostorderIterator
+    : public PostorderIterator<Container,
+                               BinaryTreeForwardPostorderIterator<Container>, 0, 1> {
+    using Parent = PostorderIterator<Container, BinaryTreeForwardPostorderIterator<Container>, 0, 1>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        using NodePtr =
-        typename Container::NodePtr;
-
-        NodePtr node = this->m_pNode;
-        if (!node)
-            return *this;
-        NodePtr parent = node->getParent();
-
-        if (!parent) {
-            this->m_pNode = nullptr;
-            return *this;
-        }
-
-        if (node == parent->getChild(0) &&
-            parent->getChild(1))
-        {
-            node = parent->getChild(1);
-            while (true) {
-                if (node->getChild(0))
-                    node = node->getChild(0);
-                else if (node->getChild(1))
-                    node = node->getChild(1);
-                else
-                    break;
-            }
-        }
-        else 
-            node = parent;
-
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename Container>
-class BinaryTreeBackwardPostorderIterator : public general_iterator<Container, 
-                                         BinaryTreeBackwardPostorderIterator<Container>>{
-    using MySelf = BinaryTreeBackwardPostorderIterator<Container>;
-    using Parent = general_iterator<Container, MySelf>;
+class BinaryTreeBackwardPostorderIterator
+    : public PostorderIterator<Container,
+                               BinaryTreeBackwardPostorderIterator<Container>, 1, 0> {
+    using Parent = PostorderIterator<Container, BinaryTreeBackwardPostorderIterator<Container>, 1, 0>;
     using Parent::Parent;
-public:
-    // TODO: Completar el operator++
-    MySelf& operator++(){
-        using NodePtr = typename Container::NodePtr;
-        NodePtr node = this->m_pNode;
-
-        if (!node)
-            return *this;
-        if (node->getChild(1)) 
-            node = node->getChild(1);
-        else if (node->getChild(0))
-            node = node->getChild(0);
-        else {
-            NodePtr parent = node->getParent();
-            while (parent) {
-                if (node == parent->getChild(1) &&
-                    parent->getChild(0))
-                {
-                    node = parent->getChild(0);
-                    break;
-                }
-                node = parent;
-                parent = parent->getParent();
-            }
-            if (!parent)
-                node = nullptr;
-        }
-        this->m_pNode = node;
-        return *this;
-    }
 };
 
 template <typename T>

@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <sstream> 
 #include <mutex>
-#include "general_iterator.h"
+#include "iterators/general_iterator.h"
 #include "../types.h"
 #include "../foreach.h"
 #include "basetrait.h"
