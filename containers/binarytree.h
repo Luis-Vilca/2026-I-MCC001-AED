@@ -9,6 +9,7 @@
 #include "iterators/inorder_iterator.h"
 #include "iterators/postorder_iterator.h"
 #include "iterators/preorder_iterator.h"
+#include "iterators/treeview.h"
 #include "basetrait.h"
 #include "../foreach.h"
 #include "../types.h"
@@ -90,7 +91,8 @@ public:
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
 
-    using forward_inorder_iterator    = BinaryTreeForwardInorderIterator<MySelf>;
+    using forward_inorder_iterator    = BinaryTreeForwardInorderIterator<MySelf
+    >;
     using backward_inorder_iterator   = BinaryTreeBackwardInorderIterator<MySelf>;
     using forward_preorder_iterator   = BinaryTreeForwardPreorderIterator<MySelf>;
     using backward_preorder_iterator  = BinaryTreeBackwardPreorderIterator<MySelf>;
@@ -218,35 +220,35 @@ public:
         internal_insert(m_pRoot, value, ref);
     }
     
-    forward_inorder_iterator begin()   {return forward_inorder_iterator(this, 
-                                               forward_inorder_iterator::first(m_pRoot));}
-    
-    forward_inorder_iterator end()     {return forward_inorder_iterator(this, nullptr);}
-    
-    backward_inorder_iterator begin()  {return backward_inorder_iterator(this, 
-                                               backward_inorder_iterator::first(m_pRoot));}
-    
-    backward_inorder_iterator end()    {return backward_inorder_iterator(this, nullptr);}
-    
-    forward_preorder_iterator begin()  {return forward_preorder_iterator(this, 
-                                               forward_preorder_iterator::first(m_pRoot));}
-    
-    forward_preorder_iterator end()    {return forward_preorder_iterator(this, nullptr);}
-    
-    backward_preorder_iterator begin() {return backward_preorder_iterator(this, 
-                                               backward_preorder_iterator::first(m_pRoot));}
-    
-    backward_preorder_iterator end()   {return backward_preorder_iterator(this, nullptr); }
-    
-    forward_postorder_iterator begin() {return forward_postorder_iterator(this,
-                                               forward_postorder_iterator::first(m_pRoot));}
-
-    forward_postorder_iterator end()   {return forward_postorder_iterator(this, nullptr);}
-
-    backward_postorder_iterator begin(){return backward_postorder_iterator(this,
-                                               backward_postorder_iterator::first(m_pRoot));}
-
-    backward_postorder_iterator end()  {return backward_postorder_iterator(this, nullptr);}
+    TreeView<forward_inorder_iterator> inorder() {
+        return { forward_inorder_iterator(this, forward_inorder_iterator::first(m_pRoot)),
+                 forward_inorder_iterator(this, nullptr) };
+    }
+ 
+    TreeView<backward_inorder_iterator> inorder_reverse() {
+        return { backward_inorder_iterator(this, backward_inorder_iterator::first(m_pRoot)),
+                 backward_inorder_iterator(this, nullptr) };
+    }
+ 
+    TreeView<forward_preorder_iterator> preorder() {
+        return { forward_preorder_iterator(this, forward_preorder_iterator::first(m_pRoot)),
+                 forward_preorder_iterator(this, nullptr) };
+    }
+ 
+    TreeView<backward_preorder_iterator> preorder_reverse() {
+        return { backward_preorder_iterator(this, backward_preorder_iterator::first(m_pRoot)),
+                 backward_preorder_iterator(this, nullptr) };
+    }
+ 
+    TreeView<forward_postorder_iterator> postorder() {
+        return { forward_postorder_iterator(this, forward_postorder_iterator::first(m_pRoot)),
+                 forward_postorder_iterator(this, nullptr) };
+    }
+ 
+    TreeView<backward_postorder_iterator> postorder_reverse() {
+        return { backward_postorder_iterator(this, backward_postorder_iterator::first(m_pRoot)),
+                 backward_postorder_iterator(this, nullptr) };
+    }
 
 protected:
 
@@ -264,24 +266,6 @@ protected:
         size_t pos = !m_comp(value, pNode->getDataRef());
         NodePtr inserted = internal_insert(pNode->getChildRef(pos), value, ref, pNode);
         return  inserted; 
-    }
-
-public:
-    template <typename Iterator, typename Func, typename... Args>
-    void ForEach(Iterator begin, Iterator end, Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
-        for (auto it = begin; it != end; ++it)
-            func(*it, forward<Args>(args)...);
-    }
-
-    template <typename Iterator, typename Func, typename... Args>
-    Iterator FirstThat(Iterator begin, Iterator end, Func func, Args &&... args){
-        scoped_lock<mutex> lock(m_mtx);
-        for (auto it = begin; it != end; ++it){
-            if (func(*it, forward<Args>(args)...))
-                return it;
-        }
-        return end;
     }
 };
 

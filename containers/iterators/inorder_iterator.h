@@ -9,9 +9,9 @@ class InorderIterator : public general_iterator<Container, DerivedIterator> {
 
     using Parent = general_iterator<Container, DerivedIterator>;
     using Parent::Parent;
-public:
-
     using NodePtr = typename Container::NodePtr;
+    
+public:
 
     static NodePtr first(NodePtr root) {
         while(root && root->getChild(First))
@@ -25,7 +25,7 @@ public:
         NodePtr node = this->m_pNode;
 
         if (!node)
-            return *this;
+            return this->self();
         if (node->getChild(Second)) {
             node = node->getChild(Second);
             while (node->getChild(First))
@@ -41,7 +41,7 @@ public:
             node = parent;
         }
         this->m_pNode = node;
-        return *this;
+        return this->self();
     }
 };
 

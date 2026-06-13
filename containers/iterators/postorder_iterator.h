@@ -8,9 +8,9 @@ class PostorderIterator : public general_iterator<Container, DerivedIterator> {
     
     using Parent = general_iterator<Container, DerivedIterator>;
     using Parent::Parent;
-public:
-
     using NodePtr = typename Container::NodePtr;
+    
+public:
 
     static NodePtr first(NodePtr root){
         while(root) {
@@ -29,12 +29,12 @@ public:
         NodePtr node = this->m_pNode;
 
         if (!node) 
-            return *(this);
+            return this->self();
 
         NodePtr parent = node->getParent();
         if (!parent) {
             this->m_pNode = nullptr;
-            return *(this);
+            return this->self();
         }
 
         if (node == parent->getChild(First) && parent->getChild(Second)) {
@@ -51,7 +51,7 @@ public:
             node = parent;
         }
         this->m_pNode = node;
-        return *(this);
+        return this->self();
     }
 };
 

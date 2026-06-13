@@ -1,5 +1,6 @@
-#include "containers/binarytree.h"
 #include <fstream>
+#include "containers/binarytree.h"
+#include "foreach.h"
 
 using namespace std;
 
@@ -32,8 +33,8 @@ void BinaryTreeDemo(){
     tree1.insert(21,8);
     tree1.insert(8,11);
 
-    // cout << "Prueba iterador forward in order: " << endl;
-    // PrintTree(tree1.begin(), tree1.end());
+    cout << "Prueba iterador forward in order: " << endl;
+    ForEach(tree1.inorder(), [](auto& node){cout << node.getData() << ' ';});
 
     // cout << "Prueba iterador backward in order: " << endl;
     // PrintTree(tree1.rbegin(), tree1.rend());
