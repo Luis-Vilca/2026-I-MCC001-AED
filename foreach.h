@@ -30,4 +30,9 @@ void ForEach(const Container& v1, Func func, Args &&... args){
     ForEach(v1.begin(), v1.end(), func, forward<Args>(args)...);
 }
 
+template <typename Container, typename Func, typename... Args>
+auto FirstThat(const Container& v1, Func func, Args &&... args){
+    return FirstThat(v1.begin(), v1.end(), func, forward<Args>(args)...);
+}
+
 #endif // __FOREACH_H__

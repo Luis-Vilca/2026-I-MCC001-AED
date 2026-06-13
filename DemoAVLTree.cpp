@@ -4,9 +4,9 @@
 using namespace std;
 
 template <typename Iterator>
-void PrintTree(Iterator begin, Iterator end, ostream& os = cout)
+void Print(Iterator iterator, ostream& os = cout)
 {
-    ForEach(begin, end, [&os](auto& node){ os << node << '\n';});
+    ForEach(iterator, [&os](auto& node){ os << node << '\n';});
 }
 
 template <typename Tree>
@@ -32,7 +32,10 @@ void AVLTreeDemo(){
     avl1.insert(3,  14);
     avl1.insert(1,  15);
 
-    // cout << "Prueba iterador forward in order: " << endl;
-    // PrintTree(avl1.begin(), avl1.end());
+    cout << "Prueba iterador forward in order: " << endl;
+    Print(avl1.inorder());
+
+    cout << "Prueba iterador forward reverse in order: " << endl;
+    Print(avl1.inorder_reverse());
 
 }

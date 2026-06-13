@@ -13,14 +13,6 @@ class PreorderIterator : public general_iterator<Container, DerivedIterator> {
 public:
 
     static NodePtr first(NodePtr root){
-        while(root) {
-            if(root->getChild(Second))
-                root = root->getChild(Second);
-            else if(root->getChild(First))
-                root = root->getChild(First);
-            else
-                break;
-        }
         return root;
     }
 

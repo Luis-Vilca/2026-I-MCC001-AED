@@ -91,8 +91,7 @@ public:
     using Comp       = typename Traits::Comp;
     using MySelf     = BinaryTree<Traits>;
 
-    using forward_inorder_iterator    = BinaryTreeForwardInorderIterator<MySelf
-    >;
+    using forward_inorder_iterator    = BinaryTreeForwardInorderIterator<MySelf>;
     using backward_inorder_iterator   = BinaryTreeBackwardInorderIterator<MySelf>;
     using forward_preorder_iterator   = BinaryTreeForwardPreorderIterator<MySelf>;
     using backward_preorder_iterator  = BinaryTreeBackwardPreorderIterator<MySelf>;
