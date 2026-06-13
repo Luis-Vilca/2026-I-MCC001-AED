@@ -22,49 +22,43 @@
 //Revisar CRTP para que la clase padre pueda ver la clase hijo (para no usar static cast)
 
 template <typename Container>
-class BinaryTreeForwardInorderIterator
-    : public InorderIterator<Container, 
-                             BinaryTreeForwardInorderIterator<Container>, 0, 1> {
+class BinaryTreeForwardInorderIterator: public InorderIterator<Container, 
+                                               BinaryTreeForwardInorderIterator<Container>, 0, 1> {
     using Parent = InorderIterator<Container, BinaryTreeForwardInorderIterator<Container>, 0, 1>;
     using Parent::Parent;
 };
 
 template <typename Container>
-class BinaryTreeBackwardInorderIterator
-    : public InorderIterator<Container,
-                             BinaryTreeBackwardInorderIterator<Container>, 1, 0> {
+class BinaryTreeBackwardInorderIterator: public InorderIterator<Container,
+                                                BinaryTreeBackwardInorderIterator<Container>, 1, 0> {
     using Parent = InorderIterator<Container, BinaryTreeBackwardInorderIterator<Container>, 1, 0>;
     using Parent::Parent;
 };
 
 template <typename Container>
-class BinaryTreeForwardPreorderIterator
-    : public PreorderIterator<Container,
-                              BinaryTreeForwardPreorderIterator<Container>, 0, 1> {
+class BinaryTreeForwardPreorderIterator: public PreorderIterator<Container,
+                                                BinaryTreeForwardPreorderIterator<Container>, 0, 1> {
     using Parent = PreorderIterator<Container, BinaryTreeForwardPreorderIterator<Container>, 0, 1>;
     using Parent::Parent;
 };
 
 template <typename Container>
-class BinaryTreeBackwardPreorderIterator
-    : public PreorderIterator<Container,
-                              BinaryTreeBackwardPreorderIterator<Container>, 1, 0> {
+class BinaryTreeBackwardPreorderIterator: public PreorderIterator<Container,
+                                                 BinaryTreeBackwardPreorderIterator<Container>, 1, 0> {
     using Parent = PreorderIterator<Container, BinaryTreeBackwardPreorderIterator<Container>, 1, 0>;
     using Parent::Parent;
 };
 
 template <typename Container>
-class BinaryTreeForwardPostorderIterator
-    : public PostorderIterator<Container,
-                               BinaryTreeForwardPostorderIterator<Container>, 0, 1> {
+class BinaryTreeForwardPostorderIterator: public PostorderIterator<Container,
+                                                 BinaryTreeForwardPostorderIterator<Container>, 0, 1> {
     using Parent = PostorderIterator<Container, BinaryTreeForwardPostorderIterator<Container>, 0, 1>;
     using Parent::Parent;
 };
 
 template <typename Container>
-class BinaryTreeBackwardPostorderIterator
-    : public PostorderIterator<Container,
-                               BinaryTreeBackwardPostorderIterator<Container>, 1, 0> {
+class BinaryTreeBackwardPostorderIterator: public PostorderIterator<Container,
+                                                  BinaryTreeBackwardPostorderIterator<Container>, 1, 0> {
     using Parent = PostorderIterator<Container, BinaryTreeBackwardPostorderIterator<Container>, 1, 0>;
     using Parent::Parent;
 };
@@ -224,77 +218,35 @@ public:
         internal_insert(m_pRoot, value, ref);
     }
     
-    forward_inorder_iterator begin() {
-        NodePtr node = m_pRoot;
-        while (node && node->getChild(0))
-            node = node->getChild(0);
-        return forward_inorder_iterator(this, node);
-    }
+    forward_inorder_iterator begin()   {return forward_inorder_iterator(this, 
+                                               forward_inorder_iterator::first(m_pRoot));}
     
-    forward_inorder_iterator end() {
-        return forward_inorder_iterator(this, nullptr);
-    }
+    forward_inorder_iterator end()     {return forward_inorder_iterator(this, nullptr);}
     
-    backward_inorder_iterator rbegin() {
-        NodePtr node = m_pRoot;
-        while (node && node->getChild(1))
-            node = node->getChild(1);
-        return backward_inorder_iterator(this, node);
-    }
+    backward_inorder_iterator begin()  {return backward_inorder_iterator(this, 
+                                               backward_inorder_iterator::first(m_pRoot));}
     
-    backward_inorder_iterator rend() {
-        return backward_inorder_iterator(this, nullptr);
-    }
+    backward_inorder_iterator end()    {return backward_inorder_iterator(this, nullptr);}
     
-    forward_preorder_iterator begin_preorder() {
-        return forward_preorder_iterator(this, m_pRoot);
-    }
+    forward_preorder_iterator begin()  {return forward_preorder_iterator(this, 
+                                               forward_preorder_iterator::first(m_pRoot));}
     
-    forward_preorder_iterator end_preorder() {
-        return forward_preorder_iterator(this, nullptr);
-    }
+    forward_preorder_iterator end()    {return forward_preorder_iterator(this, nullptr);}
     
-    backward_preorder_iterator rbegin_preorder() {
-        NodePtr node = m_pRoot;
-        while (node) {
-            if (node->getChild(1))
-                node = node->getChild(1);
-            else if (node->getChild(0))
-                node = node->getChild(0);
-            else
-                break;
-        }
-        return backward_preorder_iterator(this, node);
-    }
+    backward_preorder_iterator begin() {return backward_preorder_iterator(this, 
+                                               backward_preorder_iterator::first(m_pRoot));}
     
-    backward_preorder_iterator rend_preorder() {
-        return backward_preorder_iterator(this, nullptr);
-    }
+    backward_preorder_iterator end()   {return backward_preorder_iterator(this, nullptr); }
     
-    forward_postorder_iterator begin_postorder() {
-        NodePtr node = m_pRoot;
-        while (node) {
-            if (node->getChild(0))
-                node = node->getChild(0);
-            else if (node->getChild(1))
-                node = node->getChild(1);
-            else
-                break;
-        }
-        return forward_postorder_iterator(this, node);
-    }
+    forward_postorder_iterator begin() {return forward_postorder_iterator(this,
+                                               forward_postorder_iterator::first(m_pRoot));}
 
-    forward_postorder_iterator end_postorder() {
-        return forward_postorder_iterator(this, nullptr);
-    }
+    forward_postorder_iterator end()   {return forward_postorder_iterator(this, nullptr);}
 
-    backward_postorder_iterator rbegin_postorder(){
-        return backward_postorder_iterator(this, m_pRoot);
-    }
+    backward_postorder_iterator begin(){return backward_postorder_iterator(this,
+                                               backward_postorder_iterator::first(m_pRoot));}
 
-    backward_postorder_iterator rend_postorder(){
-        return backward_postorder_iterator(this, nullptr);
-    }
+    backward_postorder_iterator end()  {return backward_postorder_iterator(this, nullptr);}
 
 protected:
 

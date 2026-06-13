@@ -10,10 +10,18 @@ class InorderIterator : public general_iterator<Container, DerivedIterator> {
     using Parent = general_iterator<Container, DerivedIterator>;
     using Parent::Parent;
 public:
+
+    using NodePtr = typename Container::NodePtr;
+
+    static NodePtr first(NodePtr root) {
+        while(root && root->getChild(First))
+            root = root->getChild(First);
+        return root;
+    }
+
     // TODO: Completar el operator++
     DerivedIterator& operator++(){
         
-        using NodePtr = typename Container::NodePtr;
         NodePtr node = this->m_pNode;
 
         if (!node)
