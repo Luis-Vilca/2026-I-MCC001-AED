@@ -9,7 +9,7 @@
 #include "iterators/inorder_iterator.h"
 #include "iterators/postorder_iterator.h"
 #include "iterators/preorder_iterator.h"
-#include "iterators/treeview.h"
+#include "iterators/TreeIterators.h"
 #include "basetrait.h"
 #include "../foreach.h"
 #include "../types.h"
@@ -219,32 +219,32 @@ public:
         internal_insert(m_pRoot, value, ref);
     }
     
-    TreeView<forward_inorder_iterator> inorder() {
+    TreeIterators<forward_inorder_iterator> inorder() {
         return { forward_inorder_iterator(this, forward_inorder_iterator::first(m_pRoot)),
                  forward_inorder_iterator(this, nullptr) };
     }
  
-    TreeView<backward_inorder_iterator> inorder_reverse() {
+    TreeIterators<backward_inorder_iterator> inorder_reverse() {
         return { backward_inorder_iterator(this, backward_inorder_iterator::first(m_pRoot)),
                  backward_inorder_iterator(this, nullptr) };
     }
  
-    TreeView<forward_preorder_iterator> preorder() {
+    TreeIterators<forward_preorder_iterator> preorder() {
         return { forward_preorder_iterator(this, forward_preorder_iterator::first(m_pRoot)),
                  forward_preorder_iterator(this, nullptr) };
     }
  
-    TreeView<backward_preorder_iterator> preorder_reverse() {
+    TreeIterators<backward_preorder_iterator> preorder_reverse() {
         return { backward_preorder_iterator(this, backward_preorder_iterator::first(m_pRoot)),
                  backward_preorder_iterator(this, nullptr) };
     }
  
-    TreeView<forward_postorder_iterator> postorder() {
+    TreeIterators<forward_postorder_iterator> postorder() {
         return { forward_postorder_iterator(this, forward_postorder_iterator::first(m_pRoot)),
                  forward_postorder_iterator(this, nullptr) };
     }
  
-    TreeView<backward_postorder_iterator> postorder_reverse() {
+    TreeIterators<backward_postorder_iterator> postorder_reverse() {
         return { backward_postorder_iterator(this, backward_postorder_iterator::first(m_pRoot)),
                  backward_postorder_iterator(this, nullptr) };
     }
