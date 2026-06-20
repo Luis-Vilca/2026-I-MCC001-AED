@@ -64,23 +64,6 @@ class BinaryTreeBackwardPostorderIterator: public PostorderIterator<Container,
     using Parent::Parent;
 };
 
-template <typename T>
-struct BaseBinaryTreeListTrait {
-    using value_type = T;
-};
-
-template <typename T>
-struct AscendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
-                                      public AscendingTrait<T>
-{
-};
-
-template <typename T>
-struct DescendingBinaryTreeListTrait : public BaseBinaryTreeListTrait<T>,
-                                       public DescendingTrait<T>
-{
-};
-
 template <typename Traits>
 class BinaryTree{
 public:

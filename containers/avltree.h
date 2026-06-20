@@ -131,11 +131,4 @@ private:
     }
  
 };
- 
-template <typename T>
-struct AscendingAVLTreeTrait : public AscendingBinaryTreeListTrait<T> {};
- 
-template <typename T>
-struct DescendingAVLTreeTrait : public DescendingBinaryTreeListTrait<T> {};
- 
 #endif // __AVL_TREE_H__

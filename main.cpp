@@ -31,9 +31,9 @@ int main() {
     cout << "i6: " << (int)i6 << endl;
 
     // DemoMacros();
-    DemoVector();
+    // DemoVector();
     // DemoConcurrentVector();
-    // ListsDemo();
+    ListsDemo();
     cout<<endl<<"Binary tree Demo: " << endl;
     BinaryTreeDemo();
 

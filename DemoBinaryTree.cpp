@@ -26,7 +26,7 @@ bool IsEven(Node& node)
 
 void BinaryTreeDemo(){
     
-    BinaryTree<AscendingBinaryTreeListTrait<TI>> tree1;
+    BinaryTree<AscendingContainerTrait<TI>> tree1;
     tree1.insert(10,5);
     tree1.insert(20,6);
     tree1.insert(11,7);
@@ -35,6 +35,11 @@ void BinaryTreeDemo(){
 
     cout << "Prueba iterador forward in order: " << endl;
     Print(tree1.inorder());
+
+    cout << "Prueba iterador forward in order con for nativo: " << endl;
+    for (auto &node : tree1.inorder()){
+        cout << node << '\n';
+    }
 
     cout << "Prueba iterador backward in order: " << endl;
     Print(tree1.inorder_reverse());
@@ -56,13 +61,13 @@ void BinaryTreeDemo(){
     file.close();
 
     ifstream ifs("tree.txt");
-    BinaryTree<DescendingBinaryTreeListTrait<TI>> tree2;
+    BinaryTree<DescendingContainerTrait<TI>> tree2;
     Read(tree2, ifs);
     
     cout << "Prueba operadores sobrecargados: " << endl;
     Print(tree2.inorder_reverse());
 
-    auto it = FirstThat(tree2.inorder(), IsEven<BinaryTree<DescendingBinaryTreeListTrait<TI>>::BinaryTreeNode>);
+    auto it = FirstThat(tree2.inorder(), IsEven<BinaryTree<DescendingContainerTrait<TI>>::BinaryTreeNode>);
     if(it != tree2.inorder().end()){
         cout << "Primer par: "
             << *it << endl;

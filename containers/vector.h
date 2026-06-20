@@ -47,9 +47,10 @@ struct VectorNode{
     void operator+=(const value_type& value) { m_data += value; }
 };
 
-template <typename T>
-struct VectorTraits : public BaseContainerTrait<T, VectorNode<T>>{
-};
+//Introducir el Node dentro de la clase vector
+// template <typename T>
+// struct VectorTraits : public BaseContainerTrait<T, VectorNode<T>>{
+// };
 
 template <typename Traits>
 ostream& operator<<(ostream& os, VectorNode<Traits>& vn){

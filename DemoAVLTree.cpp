@@ -25,7 +25,7 @@ bool IsEven(Node& node)
 
 void AVLTreeDemo(){
     
-    AVLTree<AscendingAVLTreeTrait<int>> avl1;
+    AVLTree<AscendingContainerTrait<int>> avl1;
     avl1.insert(10, 11);
     avl1.insert(20, 12);
     avl1.insert(5,  13);
