@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 #include <mutex>     // mutex
-#include "general_iterator.h"
+#include "iterators/general_iterator.h"
 #include "../util.h"
 #include "../types.h"
 #include "../foreach.h"
@@ -29,77 +29,65 @@ public:
     }
 };
 
-// Linked List Node
-template <typename T>
-class LLNode{
-public:
-    using value_type = T;
-    using Node       = LLNode<T>;
-protected:
-    value_type m_data;
-    Ref        m_ref;
-    Node      *m_pNext;
-public:
-    LLNode(){}
-    LLNode(value_type data, Ref ref, Node *pNext = nullptr) 
-           : m_data(data), m_ref(ref), m_pNext(pNext) {}
-    virtual ~LLNode() {}
-
-    value_type      getData() const { return m_data; }
-    value_type&     getDataRef()    { return m_data; }
-    void            setData(value_type data) { m_data = data; }
-    Ref             getRef() const  { return m_ref; }
-    Ref&            getRefRef()     { return m_ref; }
-    void            setRef(Ref ref) { m_ref = ref; }
-    Node*           getNext() const { return m_pNext; }
-    Node*&          getNextRef()    { return m_pNext; }
-    void            setNext(Node *pNext) { m_pNext = pNext; }
-};
-
-template <typename T>
-ostream &operator<<(ostream &os, const LLNode<T> &node){
-    return os << "(" <<node.getData() << ", " << node.getRef() << ")";
-}
-
-template <typename T>
-struct BaseLinkedListTrait : public BaseContainerTrait<T, LLNode<T>>{
-
-};
-
-template <typename T>
-struct AscendingLinkedListTrait : public BaseLinkedListTrait<T>,
-                                  public AscendingTrait<T>
-{
-};
-
-template <typename T>
-struct DescendingLinkedListTrait : public BaseLinkedListTrait<T>,
-                                   public DescendingTrait<T>
-{
-};
-
 template <typename Traits>
 class LinkedList{
 public:
+    
+    class LinkedListNode;
     using value_type = typename Traits::value_type;
-    using Node       = typename Traits::Node;
+    using Node       = LinkedListNode;
+    using NodePtr    = Node*;
     using Comp       = typename Traits::Comp;
     using MySelf     = LinkedList<Traits>;
 
     using forward_iterator = LinkedListForwardIterator<MySelf>;
-    // friend forward_iterator;
 
 private:
-    Node *m_pRoot = nullptr;
-    Node *m_pTail = nullptr;
+    NodePtr m_pRoot = nullptr;
+    NodePtr m_pTail = nullptr;
     size_t m_size = 0;
     Comp   m_comp;
     mutex m_mtx;
+
+public:
+
+    class LinkedListNode{
+    public:
+        using value_type = typename Traits::value_type;
+        using Node       = LinkedListNode;
+        using NodePtr    = Node*;
+
+    protected:
+        value_type m_data;
+        Ref        m_ref;
+        NodePtr    m_pNext;
+
+    public:
+
+        LinkedListNode(): m_pNext(nullptr){}
+        LinkedListNode(value_type data, Ref ref, NodePtr pNext = nullptr)
+                : m_data(data), m_ref(ref), m_pNext(pNext){ }
+
+        value_type  getData() const             { return m_data;}
+        value_type& getDataRef()                {return m_data;}
+        void        setData(value_type data)    { m_data = data;}
+        Ref         getRef() const              { return m_ref;}
+        Ref&        getRefRef()                 { return m_ref;}
+        void        setRef(Ref ref)             { m_ref = ref;}
+        NodePtr     getNext() const             { return m_pNext;}
+        NodePtr&    getNextRef()                { return m_pNext;}
+        void        setNext(NodePtr pNext)      { m_pNext = pNext;}
+        
+        friend ostream& operator<<(ostream& os, const LinkedListNode& node) {
+            return os << "(" << node.m_data << ", " << node.m_ref << ")";
+        }
+    };
+
 public:
     LinkedList() {}
     LinkedList(const LinkedList &other){ // Copy constructor
 
-        Node* pTemp = other.m_pRoot;
+        NodePtr pTemp = other.m_pRoot;
 
         while(pTemp != nullptr){
             push_back(pTemp -> getData(), pTemp -> getRef());
@@ -123,7 +111,7 @@ public:
     virtual        ~LinkedList() {
         
         scoped_lock<mutex> lock(m_mtx);
-        Node* pTemp = m_pRoot;
+        NodePtr pTemp = m_pRoot;
 
         while (pTemp){
             Node* pNext = pTemp->getNext();
@@ -137,7 +125,7 @@ public:
     }
 
     virtual void   push_front(value_type value, Ref ref) {
-        Node* pTemp = new Node(value, ref, m_pRoot);  //Se crea el Nodo temporal con los datos ingresados que apunta a m_pRoot
+        NodePtr pTemp = new Node(value, ref, m_pRoot);  //Se crea el Nodo temporal con los datos ingresados que apunta a m_pRoot
         
         scoped_lock<mutex> lock(m_mtx);
         m_pRoot = pTemp;                              //Se actualiza el nodo raiz
@@ -149,7 +137,7 @@ public:
         
         scoped_lock<mutex> lock(m_mtx);
         if( m_pRoot ){
-            Node* pTemp = m_pRoot;
+            NodePtr pTemp = m_pRoot;
             m_pRoot = m_pRoot->getNext();
             --m_size;
             return make_pair(pTemp->getData(), pTemp->getRef());
@@ -157,7 +145,7 @@ public:
             throw out_of_range("pop_front(): empty list");
     }
     virtual void    push_back(value_type value, Ref ref){
-        Node* pTemp = new Node(value, ref, nullptr);  //Como es el ultimo nodo no apunta a nada
+        NodePtr pTemp = new Node(value, ref, nullptr);  //Como es el ultimo nodo no apunta a nada
         
         scoped_lock<mutex> lock(m_mtx);
         if (m_size == 0){
@@ -188,7 +176,7 @@ public:
         }
 
         //Lista con varios elementos
-        Node *pTemp = m_pRoot;
+        NodePtr pTemp = m_pRoot;
 
         while (pTemp->getNext() != m_pTail)             //Recorrer toda la lista hasta el penultimo elemento
             pTemp = pTemp->getNext();
@@ -203,7 +191,7 @@ public:
         return pDelete;
     }
 private:
-            void    internal_insert(Node* &pParent, const value_type &value, Ref ref);
+            void    internal_insert(NodePtr &pParent, const value_type &value, Ref ref);
 public:
     virtual void    insert(const value_type &value, Ref ref);
     
@@ -212,7 +200,7 @@ public:
         if (index >= m_size)
         throw out_of_range("Index out of range");
 
-        Node* pTemp = m_pRoot;
+        NodePtr pTemp = m_pRoot;
         for (size_t i = 0; i < index; ++i){
             pTemp = pTemp -> getNext();
         }
@@ -240,7 +228,7 @@ public:
 };
 
 template <typename Traits>
-void LinkedList<Traits>::internal_insert(Node* &pPrev, const value_type &value, Ref ref){
+void LinkedList<Traits>::internal_insert(NodePtr &pPrev, const value_type &value, Ref ref){
     if(!pPrev || m_comp(value, pPrev->getDataRef())){
         pPrev = new Node(value, ref, pPrev);
         m_size++;
@@ -259,7 +247,7 @@ void LinkedList<Traits>::insert(const value_type &value, Ref ref){
 template <typename Traits>
 string  LinkedList<Traits>::toString() {
     stringstream ss;
-    Node *pNode = m_pRoot;
+    NodePtr pNode = m_pRoot;
     ss << "[";
     if( m_size > 0 ){
         for( size_t i = 0 ; i < size()-1 ; ++i ){

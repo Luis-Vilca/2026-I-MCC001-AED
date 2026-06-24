@@ -4,9 +4,12 @@ LDFLAGS = -pthread # Añadido -pthread
 
 TARGET = main
 SRCS = main.cpp \
-	   ListsDemo.cpp \
-	   containers/BTreeDemo.cpp 
-# 	   DemoVector.cpp
+	   BTreeDemo.cpp
+# 	   ListsDemo.cpp \
+#  	   DemoVector.cpp \
+# 	   DemoBinaryTree.cpp \
+# 	   DemoAVLTree.cpp
+# 	   DemoVector.cpp \
 # macros.cpp vector.cpp
 
 OBJS = $(SRCS:.cpp=.o)

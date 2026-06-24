@@ -26,8 +26,15 @@ Iterator FirstThat(Iterator begin, Iterator end, Func func, Args &&... args){
 }
 
 template <typename Container, typename Func, typename... Args>
-void ForEach(Container& v1, Func func, Args &&... args){
+void ForEach(const Container& v1, Func func, Args &&... args){
+    scoped_lock<mutex> lock(v1.getMutex());
     ForEach(v1.begin(), v1.end(), func, forward<Args>(args)...);
+}
+
+template <typename Container, typename Func, typename... Args>
+auto FirstThat(const Container& v1, Func func, Args &&... args){
+    scoped_lock<mutex> lock(v1.getMutex());
+    return FirstThat(v1.begin(), v1.end(), func, forward<Args>(args)...);
 }
 
 #endif // __FOREACH_H__

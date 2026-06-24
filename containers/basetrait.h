@@ -4,20 +4,16 @@
 
 using namespace std;
 
-template <typename _T, typename _Node>
-struct BaseContainerTrait{
-    using value_type = typename _T;
-    using Node       = typename _Node;
+template <typename _T, typename Comparator>
+struct ContainerTrait{
+    using value_type = _T;
+    using Comp       = Comparator;
 };
 
-template <typename _T>
-struct AscendingTrait{
-    using Comp = less<_T>;
-};
+template <typename T>
+using AscendingContainerTrait = ContainerTrait<T, less<T>>;
 
-template <typename _T>
-struct DescendingTrait{
-    using Comp = greater<_T>;
-};
+template <typename T>
+using DescendingContainerTrait = ContainerTrait<T, greater<T>>;
 
 #endif // __BASE_TRAIT_H__

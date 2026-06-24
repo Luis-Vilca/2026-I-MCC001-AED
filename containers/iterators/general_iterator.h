@@ -13,10 +13,14 @@ class general_iterator
 protected:
     Container *m_pContainer;
     Node      *m_pNode;
+
+protected:
+    IteratorBase& self() { return *(IteratorBase *)this;}
+     
 public:
     general_iterator(Container *pContainer, Node *pNode)
         : m_pContainer(pContainer), m_pNode(pNode) {}
-    general_iterator(Myself &other) 
+    general_iterator(const Myself &other) 
           : m_pContainer(other.m_pContainer), m_pNode(other.m_pNode){}
     general_iterator(Myself &&other) // Move constructor
           {   m_pContainer = move(other.m_pContainer);
@@ -25,7 +29,7 @@ public:
     IteratorBase operator=(IteratorBase &iter)
           {   m_pContainer = move(iter.m_pContainer);
               m_pNode      = move(iter.m_pNode);
-              return *(IteratorBase *)this; // Pending static_cast?
+              return this->self(); // Pending static_cast?
           }
     Node *getNode() const { return m_pNode; }
     friend bool operator==(const IteratorBase &a, const IteratorBase &b) { return a.getNode() == b.getNode(); } 

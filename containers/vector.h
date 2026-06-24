@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <sstream> 
 #include <mutex>
-#include "general_iterator.h"
+#include "iterators/general_iterator.h"
 #include "../types.h"
 #include "../foreach.h"
 #include "basetrait.h"
@@ -27,11 +27,11 @@ public:
     MySelf operator++() { this->m_pNode--; return *this; }
 };
 
-template <typename Traits>
+template <typename T>
 struct VectorNode{
-    using value_type = typename Traits::value_type;
-
-    value_type   m_data;
+    
+    using value_type = T;
+    value_type m_data;
     Ref          m_ref;
     VectorNode() : m_data(value_type()), m_ref(Ref()) {}
     VectorNode(value_type data, Ref ref) : m_data(data), m_ref(ref) {}
@@ -47,9 +47,10 @@ struct VectorNode{
     void operator+=(const value_type& value) { m_data += value; }
 };
 
-template <typename T>
-struct VectorTraits : public BaseContainerTrait<T, VectorNode<T>>{
-};
+//Introducir el Node dentro de la clase vector
+// template <typename T>
+// struct VectorTraits : public BaseContainerTrait<T, VectorNode<T>>{
+// };
 
 template <typename Traits>
 ostream& operator<<(ostream& os, VectorNode<Traits>& vn){

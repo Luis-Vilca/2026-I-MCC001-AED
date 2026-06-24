@@ -42,18 +42,18 @@ void DemoVector(){
     v1.push_back(13, 25);
 
     cout << "Recorrido con iteradores" << endl;
-    v1.ForEach(Print<TI>, cout);
+    v1.ForEach(Print<VectorNode<TI>>, cout);
     cout << endl;
-    v1.ForEach(AddOne<TI>);
-    v1.ForEach(Print<TI>, cout);
+    v1.ForEach(AddOne<VectorNode<TI>>);
+    v1.ForEach(Print<VectorNode<TI>>, cout);
     cout << endl;
     
     v1.ForEach(AddX<TI>, 10);
-    v1.ForEach(Print<TI>, cout);
+    v1.ForEach(Print<VectorNode<TI>>, cout);
     cout << endl;
     int a = 3;
     v1.ForEach([a](auto& node){   node.GetDataRef() *= a; });
-    v1.ForEach(Print<TI>, cout);
+    v1.ForEach(Print<VectorNode<TI>>, cout);
     cout << endl << a << endl;
 
     // Vector<TI>::forward_iterator it = v1.FirstThat(IsMultipleOf<TI>, 21);
@@ -91,7 +91,7 @@ void DemoVector(){
     cout << v3.ToString() << endl;
     v3.ForEach(AddX<TS>, "-X");
     cout << v3.ToString() << endl;
-    v3.ReverseForEach(Print<TS>, cout);
+    v3.ReverseForEach(Print<VectorNode<TS>>, cout);
     cout << endl;
     cout << "Size: " << v3.size() << endl;
 }
@@ -108,7 +108,7 @@ void DemoConcurrentVector(){
     // Sin sincronizacion → race condition en los contadores
     auto worker = [&v](int thread_id){
         for(int i = 0; i < 100000; i++)
-            v.ForEach(AddOne<TI>);
+            v.ForEach(AddOne<VectorNode<TI>>);
         cout << "Thread " << thread_id << " terminado\n";
     };
 
