@@ -4,17 +4,25 @@
 
 using namespace std;
 
-template <typename _T, typename Comparator>
+template <typename T, typename Ref = void, typename Comparator = less<T>>
 struct ContainerTrait{
-    using value_type = _T;
+    using value_type = T;
+    using ref_type   = Ref;
     using Comp       = Comparator;
 };
 
 template <typename T>
-using AscendingContainerTrait = ContainerTrait<T, less<T>>;
+using AscendingContainerTrait = ContainerTrait<T>;
 
 template <typename T>
-using DescendingContainerTrait = ContainerTrait<T, greater<T>>;
+using DescendingContainerTrait = ContainerTrait<T, void , greater<T>>;
+
+template <typename T, typename Ref>
+using AscendingMapContainerTrait = ContainerTrait<T, Ref>;
+
+template <typename T, typename Ref>
+using DescendingMapContainerTrait = ContainerTrait<T, Ref , greater<T>>;
+
 
 template <typename T, typename NodeType, typename Comparator = less<T>>
 struct NodeContainerTrait{

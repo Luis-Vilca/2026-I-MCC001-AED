@@ -15,7 +15,7 @@ const size_t BTreeSize = 3;
 void BTreeDemo()
 {
        size_t i;
-       BTree <TC> bt (BTreeSize);
+       BTree<AscendingMapContainerTrait<TC, TL>> bt (BTreeSize);
        for (i = 0; keys2[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;

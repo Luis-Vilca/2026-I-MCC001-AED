@@ -16,11 +16,8 @@
 
 //Comentarios de mejora:
 
-//Optimizar Traits
-//Implementar clases intermedias para los 6 iteradores 
 //Sacar los prototipos de la clase nodo fuera
 //Colocar todo como Node en AVL y ya no es necesario agregar el AVLNode
-//Revisar CRTP para que la clase padre pueda ver la clase hijo (para no usar static cast)
 
 template <typename Container>
 class BinaryTreeForwardInorderIterator: public InorderIterator<Container, 
