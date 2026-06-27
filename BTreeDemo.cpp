@@ -5,17 +5,17 @@
 #include "containers/BTree.h"
 
 //const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";
-const char * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
-const char * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const TC * keys1 = "D1XJ2xTg8zKL9AhijOPQcEowRSp0NbW567BUfCqrs4FdtYZakHIuvGV3eMylmn";
+const TC * keys2 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 //"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const char * keys3 = "ZY";
+const TC * keys3 = "ZY";
 //const char * keys3 = "DYZakHIUwxVJ203ejOP9Qc8AdtuEop1XvTRghSNbW567BfiCqrs4FGMyzKLlmn";
 
-const int BTreeSize = 3;
+const size_t BTreeSize = 3;
 void BTreeDemo()
 {
-       int i;
-       BTree <char> bt (BTreeSize);
+       size_t i;
+       BTree <TC> bt (BTreeSize);
        for (i = 0; keys2[i]; i++)
        {
                //cout<<"Inserting "<<keys1[i]<<endl;

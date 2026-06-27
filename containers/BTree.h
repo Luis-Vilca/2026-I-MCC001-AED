@@ -8,7 +8,7 @@
 
 #define DEFAULT_BTREE_ORDER 3
 
-template <typename keyType, typename ObjIDType = long>
+template <typename keyType, typename ObjIDType = TL>
 class BTree 
 // this is the full version of the BTree
 {
@@ -29,17 +29,17 @@ public:
        typedef typename BTNode::Node      Node;
 
 public:
-       BTree(int order = DEFAULT_BTREE_ORDER, bool unique = true);
+       BTree(size_t order = DEFAULT_BTREE_ORDER, TB unique = true);
        ~BTree();
        //int           Open (char * name, int mode);
        //int           Create (char * name, int mode);
        //int           Close ();
-       TB              Insert (const keyType key, const int ObjID);
-       TB              Remove (const keyType key, const int ObjID);
+       TB              Insert (const keyType key, const TI ObjID);
+       TB              Remove (const keyType key, const TI ObjID);
        ObjIDType       Search (const keyType key);
        size_t          size()  { return m_NumKeys; }
-       long            height() { return m_Height;      }
-       long            GetOrder() { return m_Order;     }
+       size_t          height() { return m_Height;      }
+       size_t          GetOrder() { return m_Order;     }
 
        void            Print (ostream &os);
        void            ForEach( lpfnForEach2 lpfn, void *pExtra1 );
@@ -50,15 +50,15 @@ public:
 
 protected:
        BTNode          m_Root;
-       int             m_Height;  // height of tree
-       int             m_Order;   // order of tree
+       size_t          m_Height;  // height of tree
+       size_t          m_Order;   // order of tree
        size_t          m_NumKeys; // number of keys
        TB              m_Unique;  // Accept the elements only once ?
 };
 
-const int MaxHeight = 5;
+const size_t MaxHeight = 5;
 template <typename keyType, typename ObjIDType>
-BTree<keyType, ObjIDType>::BTree(int order, bool unique)
+BTree<keyType, ObjIDType>::BTree(size_t order, TB unique)
                                : m_Root(2 * order  + 1, unique),
                                  m_Order(order),
                                  m_NumKeys(0),
@@ -74,7 +74,7 @@ BTree<keyType, ObjIDType>::~BTree()
 }
 
 template <typename keyType, typename ObjIDType>
-bool BTree<keyType, ObjIDType>::Insert(const keyType key, const int ObjID)
+TB BTree<keyType, ObjIDType>::Insert(const keyType key, const TI ObjID)
 {
        bt_ErrorCode error = m_Root.Insert(key, ObjID);
        if( error == bt_duplicate )
@@ -89,7 +89,7 @@ bool BTree<keyType, ObjIDType>::Insert(const keyType key, const int ObjID)
 }
 
 template <typename keyType, typename ObjIDType>
-bool BTree<keyType, ObjIDType>::Remove (const keyType key, const int ObjID)
+TB BTree<keyType, ObjIDType>::Remove (const keyType key, const TI ObjID)
 {
        bt_ErrorCode error = m_Root.Remove(key, ObjID);
        if( error == bt_duplicate || error == bt_nofound )
