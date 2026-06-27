@@ -34,10 +34,10 @@ public:
        //int           Open (char * name, int mode);
        //int           Create (char * name, int mode);
        //int           Close ();
-       bool            Insert (const keyType key, const int ObjID);
-       bool            Remove (const keyType key, const int ObjID);
+       TB              Insert (const keyType key, const int ObjID);
+       TB              Remove (const keyType key, const int ObjID);
        ObjIDType       Search (const keyType key);
-       long            size()  { return m_NumKeys; }
+       size_t          size()  { return m_NumKeys; }
        long            height() { return m_Height;      }
        long            GetOrder() { return m_Order;     }
 
@@ -52,8 +52,8 @@ protected:
        BTNode          m_Root;
        int             m_Height;  // height of tree
        int             m_Order;   // order of tree
-       long            m_NumKeys; // number of keys
-       bool            m_Unique;  // Accept the elements only once ?
+       size_t          m_NumKeys; // number of keys
+       TB              m_Unique;  // Accept the elements only once ?
 };
 
 const int MaxHeight = 5;
