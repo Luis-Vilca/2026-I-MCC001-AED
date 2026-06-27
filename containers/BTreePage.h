@@ -67,17 +67,21 @@ template <typename value_type>
 bool operator<=(const _Node<value_type>& object1, const _Node<value_type>& object2)
 { return object1.data <= object2.data;    }*/
 
-template <typename value_type, typename ref_type>
+template <typename Traits>
 struct tagNode
 {
+       using value_type = typename Traits::value_type;
+       using ref_type   = typename Traits::ref_type;
+
        value_type       data;
        ref_type         ref;
        size_t           UseCounter;
+       
        tagNode(const value_type     &_data, ref_type _ref)
                : data(_data), ref(_ref), UseCounter(0) {}
        tagNode()  {}
-       operator   value_type()       { return data; }
-       size_t     GetUseCounter() { return UseCounter;}
+       operator   value_type()     { return data; }
+       size_t     GetUseCounter()  { return UseCounter;}
 };
 
 
@@ -94,7 +98,7 @@ class CBTreePage
         using ref_type   = typename Traits::ref_type;
         using Comp       = typename Traits::Comp;
         using BTPage     = CBTreePage<Traits>;         // useful shorthand
-        using Node       = tagNode<value_type, ref_type>;
+        using Node       = tagNode<Traits>;
 
        CBTreePage(size_t maxKeys, TB unique = true);
        virtual ~CBTreePage();
@@ -711,8 +715,8 @@ CBTreePage<Traits>::GetFirstNode()
 }
 
 // Deben eliminarlo e imprimir con un ForEach
-template <typename value_type, typename ref_type>
-void Print(tagNode<value_type, ref_type> &info, size_t level, void *pExtra)
+template <typename Traits>
+void Print(tagNode<Traits> &info, size_t level, void *pExtra)
 {
         ostream &os = *(ostream *)pExtra;
         for( size_t i = 0; i < level ; ++i)
@@ -722,7 +726,7 @@ void Print(tagNode<value_type, ref_type> &info, size_t level, void *pExtra)
 
 template <typename Traits>
 void CBTreePage<Traits>::Print(ostream & os){
-       ForEach(&::Print<value_type, ref_type>, 0, &os);
+       ForEach(&::Print<Traits>, 0, &os);
 }
 
 template <typename Traits>
