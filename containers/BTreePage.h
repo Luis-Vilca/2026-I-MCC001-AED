@@ -81,7 +81,6 @@ struct tagNode
 };
 
 
-
 template <typename Traits>
 class CBTreePage 
 // this is the in-memory version of the CBTreePage
@@ -94,13 +93,8 @@ class CBTreePage
         using value_type = typename Traits::value_type;
         using ref_type   = typename Traits::ref_type;
         using Comp       = typename Traits::Comp;
-        using BTPage = CBTreePage<Traits>;         // useful shorthand
-        using Node   = tagNode<value_type, ref_type>;
-
-        using lpfnForEach2   = void (*)(Node&, size_t, void*);
-        using lpfnForEach3   = void (*)(Node&, size_t, void*, void*);
-        using lpfnFirstThat2 = Node* (*)(Node&, size_t, void*);
-        using lpfnFirstThat3 = Node* (*)(Node&, size_t, void*, void*);
+        using BTPage     = CBTreePage<Traits>;         // useful shorthand
+        using Node       = tagNode<value_type, ref_type>;
 
        CBTreePage(size_t maxKeys, TB unique = true);
        virtual ~CBTreePage();
@@ -109,11 +103,13 @@ class CBTreePage
        bt_ErrorCode    Remove (const value_type &data, const ref_type ref);
        TB              Search (const value_type &data, size_t &value);
        void            Print  (ostream &os);
-       void            ForEach(lpfnForEach2 lpfn, size_t level, void *pExtra1);
-       void            ForEach(lpfnForEach3 lpfn, size_t level, void *pExtra1, void *pExtra2);
-       Node*           FirstThat(lpfnFirstThat2 lpfn, size_t level, void *pExtra1);
-       Node*           FirstThat(lpfnFirstThat3 lpfn, size_t level, void *pExtra1, void *pExtra2);
 
+       template <typename Func, typename... Args>
+       void ForEach(Func lpfn, size_t level, Args &&... args);
+
+       template <typename Func, typename... Args>
+       Node* FirstThat(Func lpfn, size_t level, Args &&... args);
+       
 protected:
        TI       m_MinKeys; // minimum number of datas in a node
        TI       m_MaxKeys, // maximum number of datas in a node
@@ -518,74 +514,41 @@ void CBTreePage<value_type, ref_type>::ForEachReverse(lpfnForEach2 lpfn, int lev
 }*/
 
 template <typename Traits>
-void CBTreePage<Traits>::ForEach(lpfnForEach2 lpfn, size_t level, void *pExtra1)
+template <typename Func, typename... Args>
+void CBTreePage<Traits>::ForEach(Func lpfn, size_t level, Args &&... args)
 {
        for( TI i = 0 ; i < m_KeyCount ; ++i)
        {
                if( m_SubPages[i] )
-                       m_SubPages[i]->ForEach(lpfn, level+1, pExtra1);
-               lpfn(m_Keys[i], level, pExtra1);
+                       m_SubPages[i]->ForEach(lpfn, level+1, forward<Args>(args)...);
+               lpfn(m_Keys[i], level, forward<Args>(args)...);
        }
        if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1, pExtra1);
+               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1,forward<Args>(args)...);
 }
 
 template <typename Traits>
-void CBTreePage<Traits>::ForEach(lpfnForEach3 lpfn, size_t level, void *pExtra1, void *pExtra2)
-{
-       for( TI i = 0 ; i < m_KeyCount ; ++i)
-       {
-               if( m_SubPages[i] )
-                       m_SubPages[i]->ForEach(lpfn, level+1, pExtra1, pExtra2);
-               lpfn(m_Keys[i], level, pExtra1, pExtra2);
-       }
-       if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1, pExtra1, pExtra2);
-}
-
-template <typename Traits>
+template <typename Func, typename... Args>
 typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(lpfnFirstThat2 lpfn, size_t level, void *pExtra1)
+CBTreePage<Traits>::FirstThat(Func lpfn, size_t level, Args &&... args)
 {
        Node *pTmp;
        for( TI i = 0 ; i < m_KeyCount ; ++i)
        {
                if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, pExtra1);
+                        pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, forward<Args>(args)...);
                        if( pTmp )
                                return pTmp;
                }
-               if( lpfn(m_Keys[i], level, pExtra1) )
+               if( lpfn(m_Keys[i], level, forward<Args>(args)...) )
                        return &m_Keys[i];
        }
        if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, pExtra1);
+                pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, forward<Args>(args)...);
                if( pTmp )
                        return pTmp;
        }
        return 0;
-}
-
-template <typename Traits>
-typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(lpfnFirstThat3 lpfn, size_t level, void *pExtra1, void *pExtra2)
-{
-       Node *pTmp;
-       for( TI i = 0 ; i < m_KeyCount ; ++i){
-               if( m_SubPages[i] ){
-                       pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, pExtra1, pExtra2);
-                       if( pTmp )
-                           return pTmp;
-               }
-               if( lpfn(m_Keys[i], level, pExtra1, pExtra2) )
-                       return &m_Keys[i];
-       }
-        if( m_SubPages[m_KeyCount] )
-        {       pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, pExtra1, pExtra2);
-                if( pTmp ) 
-                return pTmp;
-        }
-        return 0;
 }
 
 template <typename Traits>
@@ -758,10 +721,8 @@ void Print(tagNode<value_type, ref_type> &info, size_t level, void *pExtra)
 }
 
 template <typename Traits>
-void CBTreePage<Traits>::Print(ostream & os)
-{
-       lpfnForEach2 lpfn = &::Print<value_type, ref_type>;
-       ForEach(lpfn, 0, &os);
+void CBTreePage<Traits>::Print(ostream & os){
+       ForEach(&::Print<value_type, ref_type>, 0, &os);
 }
 
 template <typename Traits>

@@ -25,10 +25,6 @@ class BTree
 
 public:
        //typedef Node iterator;
-       typedef typename BTNode::lpfnForEach2    lpfnForEach2;
-       typedef typename BTNode::lpfnForEach3    lpfnForEach3;
-       typedef typename BTNode::lpfnFirstThat2  lpfnFirstThat2;
-       typedef typename BTNode::lpfnFirstThat3  lpfnFirstThat3;
        typedef typename BTNode::Node      Node;
 
 public:
@@ -45,10 +41,13 @@ public:
        size_t          GetOrder() { return m_Order;   }
 
        void            Print (ostream &os);
-       void            ForEach( lpfnForEach2 lpfn, void *pExtra1 );
-       void            ForEach( lpfnForEach3 lpfn, void *pExtra1, void *pExtra2);
-       Node*           FirstThat( lpfnFirstThat2 lpfn, void *pExtra1 );
-       Node*           FirstThat( lpfnFirstThat3 lpfn, void *pExtra1, void *pExtra2);
+
+       template <typename Func, typename... Args>
+       void  ForEach(Func lpfn, Args &&... args);
+
+       template <typename Func, typename... Args>
+       Node* FirstThat(Func lpfn, Args &&... args);
+
        //typedef               Node iterator;
 
 protected:
@@ -115,29 +114,18 @@ auto BTree<Traits>::Search (const value_type& data)
 
 
 template <typename Traits>
-void BTree<Traits>::ForEach(lpfnForEach2 lpfn, void *pExtra1)
+template <typename Func, typename... Args>
+void BTree<Traits>::ForEach(Func lpfn, Args&&... args)
 {
-       m_Root.ForEach(lpfn, 0, pExtra1);
+       m_Root.ForEach(lpfn, 0, forward<Args>(args)...);
 }
 
 template <typename Traits>
-void BTree<Traits>::ForEach(lpfnForEach3 lpfn, void *pExtra1, void *pExtra2)
-{
-       m_Root.ForEach(lpfn, 0, pExtra1, pExtra2);
-}
-
-template <typename Traits>
+template <typename Func, typename... Args>
 typename BTree<Traits>::Node *
-BTree<Traits>::FirstThat(lpfnFirstThat2 lpfn, void *pExtra1)
+BTree<Traits>::FirstThat(Func lpfn, Args&&... args)
 {
-       return m_Root.FirstThat(lpfn, 0, pExtra1);
-}
-
-template <typename Traits>
-typename BTree<Traits>::Node *
-BTree<Traits>::FirstThat(lpfnFirstThat3 lpfn, void *pExtra1, void *pExtra2)
-{
-       return m_Root.FirstThat(lpfn, 0, pExtra1, pExtra2);
+       return m_Root.FirstThat(lpfn, 0, forward<Args>(args)...);
 }
 
 template <typename Traits>
