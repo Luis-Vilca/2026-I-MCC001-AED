@@ -1,40 +1,56 @@
 #ifndef __FOREACH_H__
 #define __FOREACH_H__
 #include <iostream>
+#include <mutex>
 #include <utility> // forward
 
 using namespace std;
 
 template <typename Iterator, typename Func, typename... Args>
-void ForEach(Iterator begin, Iterator end, Func func, Args &&... args){
-    for (auto it = begin; it != end; ++it)
-        func(*it, forward<Args>(args)...);
-    // cout<<endl;
+void ForEach(Iterator begin, Iterator end, Func func, Args&&... args)
+{
+    Iterate(begin, end, forward<Func>(func), forward<Args>(args)...);
 }
 
-// Variadic templates: template <typename ...Args>
-// Variadic templates allow a function or class to accept an arbitrary
-// number of arguments.
-// Example: template <typename ...Args> func() { // ... }
+template <typename Container, typename Func, typename... Args>
+void ForEach(const Container& container, Func func, Args&&... args)
+{
+    scoped_lock<mutex> lock(container.getMutex());
+    ForEach(container.begin(), container.end(), forward<Func>(func), forward<Args>(args)...);
+}
+
 template <typename Iterator, typename Func, typename... Args>
-Iterator FirstThat(Iterator begin, Iterator end, Func func, Args &&... args){
-    for (auto it = begin; it != end; ++it){
-        if (func(*it, forward<Args>(args)...))
-            return it;
+Iterator FirstThat(Iterator begin, Iterator end, Func func, Args&&... args)
+{
+    return Iterate(begin, end, forward<Func>(func), forward<Args>(args)...);
+}
+
+
+template <typename Container, typename Func, typename... Args>
+auto FirstThat(const Container& container, Func func, Args&&... args)
+{
+    scoped_lock<mutex> lock(container.getMutex());
+
+    return FirstThat(container.begin(), container.end(), forward<Func>(func), forward<Args>(args)...);
+}
+
+template <typename Iterator, typename Func, typename... Args>
+decltype(auto) Iterate(Iterator begin, Iterator end, Func func, Args&&... args)
+{
+    using result_type = invoke_result_t<Func, decltype(*begin), Args&...>;
+
+    for (auto it = begin; it != end; ++it)
+    {
+        if constexpr (is_void_v<result_type>)
+            invoke(func, *it, args...);
+        else
+        {
+            if (invoke(func, *it, args...))
+                return it;
+        }
     }
-    return end;
-}
 
-template <typename Container, typename Func, typename... Args>
-void ForEach(const Container& v1, Func func, Args &&... args){
-    scoped_lock<mutex> lock(v1.getMutex());
-    ForEach(v1.begin(), v1.end(), func, forward<Args>(args)...);
+    if constexpr (!is_void_v<result_type>)
+        return end;
 }
-
-template <typename Container, typename Func, typename... Args>
-auto FirstThat(const Container& v1, Func func, Args &&... args){
-    scoped_lock<mutex> lock(v1.getMutex());
-    return FirstThat(v1.begin(), v1.end(), func, forward<Args>(args)...);
-}
-
 #endif // __FOREACH_H__

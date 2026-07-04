@@ -47,6 +47,7 @@ void BTreeDemo()
        cout.flush();
        
        for (auto& node : bt.forward()){cout << node.data << " -> " << node.ref << '\n';}
+       for (auto& node : bt.backward()){cout << node.data << " -> " << node.ref << '\n';}
 }
 
 /*const char * keys="CDAMPIWNBKEHOLJYQZFXVRTSGU";

@@ -114,12 +114,21 @@ class CBTreePage
        size_t          getKeyCount () const          { return m_KeyCount; }
 
        template <typename Func, typename... Args>
-       void ForEach(Func lpfn, size_t level, Args &&... args);
+       using traverse_result_t = conditional_t<is_void_v<
+                invoke_result_t<Func,Node&,size_t, Args...>>, void, Node*>;
 
        template <typename Func, typename... Args>
-       Node* FirstThat(Func lpfn, size_t level, Args &&... args);
+       auto Traverse(Func func, size_t level, Args&&... args) -> traverse_result_t<Func, Args...>;
+       
+       template <typename Func, typename... Args>
+       void ForEach(Func func, size_t level, Args &&... args);
+
+       template <typename Func, typename... Args>
+       Node* FirstThat(Func func, size_t level, Args &&... args);
        
 protected:
+       
+       mutex    m_mtx;
        TI       m_MinKeys; // minimum number of datas in a node
        TI       m_MaxKeys, // maximum number of datas in a node
                 m_MaxKeysForChilds; // just to distinguish the root
@@ -130,8 +139,8 @@ protected:
        TI       m_KeyCount;
        void  Create();
        void  Reset ();
-       void  Destroy () {   Reset(); delete this;}
        void  clear ();
+       void  Destroy () { Reset(); delete this;}
 
        bool  Redistribute1   (TI &pos);
        bool  Redistribute2   (TI pos);
@@ -152,7 +161,7 @@ protected:
        bool IsFull()             { return m_KeyCount >= m_MaxKeys; }
        TI   MinNumberOfKeys()    { return 2*m_MaxKeys/3.0; }
        TI   GetFreeCells()       { return m_MaxKeys - m_KeyCount; }
-       TI&  NumberOfKeys()      { return m_KeyCount; }
+       TI&  NumberOfKeys()       { return m_KeyCount; }
        TI   GetNumberOfKeys()    { return m_KeyCount; }
        bool IsRoot()             { return m_MaxKeysForChilds != m_MaxKeys; }
        void SetMaxKeysForChilds(size_t orderforchilds)
@@ -170,8 +179,8 @@ private:
                                                BTPage           *& pChild1,
                                                BTPage           *& pChild2,
                                                BTPage           *& pChild3,
-                                               Node        & oi1,
-                                               Node        & oi2);
+                                               Node              & oi1,
+                                               Node              & oi2);
        void MovePage(BTPage *  pChildPage,vector<Node> & tmpKeys,vector<BTPage *> & tmpSubPages);
 };
 
@@ -179,6 +188,7 @@ template <typename Traits>
 CBTreePage<Traits>::CBTreePage(size_t maxKeys, bool unique)
                                        : m_MaxKeys(maxKeys), m_Unique(unique), m_KeyCount(0)
 {
+       scoped_lock<mutex> lock(m_mtx); 
        Create();
        SetMaxKeysForChilds(m_MaxKeys);
 }
@@ -186,12 +196,14 @@ CBTreePage<Traits>::CBTreePage(size_t maxKeys, bool unique)
 template <typename Traits>
 CBTreePage<Traits>::~CBTreePage()
 {
+       scoped_lock<mutex> lock(m_mtx);
        Reset();
 }
 
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::Insert(const value_type& data, const ref_type ref)
 {
+       scoped_lock<mutex> lock(m_mtx); 
        TI pos = binary_search(m_Keys, 0, m_KeyCount, data);
        bt_ErrorCode error = bt_ok;
 
@@ -355,7 +367,7 @@ void CBTreePage<Traits>::RedistributeL2R(TI pos)
 template <typename Traits>
 void CBTreePage<Traits>::SplitChild(TI pos)
 {
-       // FIRST: deciding the second page to split
+        // FIRST: deciding the second page to split
        BTPage  *pChild1 = 0, *pChild2 = 0;
        if( pos > 0 )                                   // is left page full ?
                if( m_SubPages[pos-1]->IsFull() )
@@ -468,6 +480,7 @@ void CBTreePage<Traits>::SplitPageInto3(vector<Node>& tmpKeys,
 template <typename Traits>
 bool CBTreePage<Traits>::SplitRoot()
 {
+       scoped_lock<mutex> lock(m_mtx); 
        BTPage  *pChild1 = 0, *pChild2 = 0, *pChild3 = 0;
        Node oi1, oi2;
        SplitPageInto3( m_Keys,m_SubPages,pChild1, pChild2, pChild3, oi1, oi2);
@@ -490,6 +503,7 @@ bool CBTreePage<Traits>::SplitRoot()
 template <typename Traits>
 bool CBTreePage<Traits>::Search(const value_type &data, size_t &value)
 {
+       scoped_lock<mutex> lock(m_mtx); 
        size_t pos = binary_search(m_Keys, 0, m_KeyCount, data);
        if( pos >= m_KeyCount ){
                if( m_SubPages[pos] )
@@ -524,45 +538,71 @@ void CBTreePage<value_type, ref_type>::ForEachReverse(lpfnForEach2 lpfn, int lev
 
 template <typename Traits>
 template <typename Func, typename... Args>
-void CBTreePage<Traits>::ForEach(Func lpfn, size_t level, Args &&... args)
+auto CBTreePage<Traits>::Traverse(Func func, size_t level, Args&&... args) 
+        -> traverse_result_t<Func, Args...>
 {
-       for( TI i = 0 ; i < m_KeyCount ; ++i)
-       {
-               if( m_SubPages[i] )
-                       m_SubPages[i]->ForEach(lpfn, level+1, forward<Args>(args)...);
-               lpfn(m_Keys[i], level, forward<Args>(args)...);
-       }
-       if( m_SubPages[m_KeyCount] )
-               m_SubPages[m_KeyCount]->ForEach(lpfn, level+1,forward<Args>(args)...);
+    using callable_result = invoke_result_t<Func, Node&, size_t, Args...>;
+    for (TI i = 0; i < m_KeyCount; ++i)
+    {
+        if (m_SubPages[i])
+        {
+            if constexpr (is_void_v<callable_result>)
+                m_SubPages[i]->Traverse(func, level + 1, args...);
+            else
+            {
+                Node* result = m_SubPages[i]->Traverse(func, level + 1, args...);
+                if (result)
+                    return result;
+            }
+        }
+
+        if constexpr (is_void_v<callable_result>)
+            invoke(func, m_Keys[i], level, args...);
+        else
+        {
+            if (invoke(func, m_Keys[i], level, args...))
+                return &m_Keys[i];
+        }
+    }
+
+    if (m_SubPages[m_KeyCount])
+    {
+        if constexpr (is_void_v<callable_result>)
+            m_SubPages[m_KeyCount]->Traverse(func, level + 1, args...);
+
+        else
+        {
+            Node* result = m_SubPages[m_KeyCount]->Traverse(func, level + 1, args...);
+            if (result)
+                return result;
+        }
+    }
+
+    if constexpr (!is_void_v<callable_result>)
+        return nullptr;
+}
+
+template <typename Traits>
+template <typename Func, typename... Args>
+void CBTreePage<Traits>::ForEach(Func func, size_t level, Args &&... args)
+{
+       scoped_lock<mutex> lock(m_mtx); 
+       Traverse(func, level, args...);
 }
 
 template <typename Traits>
 template <typename Func, typename... Args>
 typename CBTreePage<Traits>::Node *
-CBTreePage<Traits>::FirstThat(Func lpfn, size_t level, Args &&... args)
+CBTreePage<Traits>::FirstThat(Func func, size_t level, Args &&... args)
 {
-       Node *pTmp;
-       for( TI i = 0 ; i < m_KeyCount ; ++i)
-       {
-               if( m_SubPages[i] ){
-                        pTmp = m_SubPages[i]->FirstThat(lpfn, level+1, forward<Args>(args)...);
-                       if( pTmp )
-                               return pTmp;
-               }
-               if( lpfn(m_Keys[i], level, forward<Args>(args)...) )
-                       return &m_Keys[i];
-       }
-       if( m_SubPages[m_KeyCount] ){
-                pTmp = m_SubPages[m_KeyCount]->FirstThat(lpfn, level+1, forward<Args>(args)...);
-               if( pTmp )
-                       return pTmp;
-       }
-       return 0;
+       scoped_lock<mutex> lock(m_mtx); 
+       return Traverse(func, level, args...);
 }
 
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::Remove(const value_type &data, const ref_type ref)
 {
+       scoped_lock<mutex> lock(m_mtx); 
        bt_ErrorCode error = bt_ok;
        TI pos = binary_search(m_Keys, 0, m_KeyCount, data);
        if( pos < NumberOfKeys() && data == m_Keys[pos].data /*&& m_Keys[pos].m_value == value*/) // We found it !
@@ -673,6 +713,7 @@ bt_ErrorCode CBTreePage<Traits>::Merge(TI pos)
 template <typename Traits>
 bt_ErrorCode CBTreePage<Traits>::MergeRoot()
 {
+       scoped_lock<mutex> lock(m_mtx); 
        TI pos = 1;
        assert( m_SubPages[pos-1]->NumberOfKeys() +
                        m_SubPages[ pos ]->NumberOfKeys() +
@@ -714,24 +755,10 @@ template <typename Traits>
 typename CBTreePage<Traits>::Node &
 CBTreePage<Traits>::GetFirstNode()
 {
+       scoped_lock<mutex> lock(m_mtx); 
        if( m_SubPages[0] )
                return m_SubPages[0]->GetFirstNode();
        return m_Keys[0];
-}
-
-// Deben eliminarlo e imprimir con un ForEach
-template <typename Traits>
-void Print(tagNode<Traits> &info, size_t level, void *pExtra)
-{
-        ostream &os = *(ostream *)pExtra;
-        for( size_t i = 0; i < level ; ++i)
-                os << "\t";
-        os << info.data << "->" << info.ref << "\n";
-}
-
-template <typename Traits>
-void CBTreePage<Traits>::Print(ostream & os){
-       ForEach(&::Print<Traits>, 0, &os);
 }
 
 template <typename Traits>
@@ -783,6 +810,7 @@ void CBTreePage<Traits>::MovePage(BTPage *pChildPage, vector<Node> &tmpKeys,vect
 template <typename Traits>
 size_t CBTreePage<Traits>::GetFreeCellsOnLeft(TI pos)
 {
+
        if( pos > 0 )                                   // there is some page on left ?
                return m_SubPages[pos-1]->GetFreeCells();
        return 0;

@@ -79,6 +79,7 @@ BTree<Traits>::BTree(size_t order, bool unique)
                                  m_NumKeys(0),
                                  m_Unique(unique)
 {
+       scoped_lock<mutex> lock(m_mtx);
        m_Root.SetMaxKeysForChilds(order);
        m_Height = 1;
 }
@@ -86,11 +87,13 @@ BTree<Traits>::BTree(size_t order, bool unique)
 template <typename Traits>
 BTree<Traits>::~BTree()
 {
+       scoped_lock<mutex> lock(m_mtx);
 }
 
 template <typename Traits>
 bool BTree<Traits>::Insert(const value_type& data, const ref_type& value)
 {
+       scoped_lock<mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Insert(data, value);
        if( error == bt_duplicate )
                return false;
@@ -106,6 +109,7 @@ bool BTree<Traits>::Insert(const value_type& data, const ref_type& value)
 template <typename Traits>
 bool BTree<Traits>::Remove (const value_type& data, const ref_type& value)
 {
+       scoped_lock<mutex> lock(m_mtx);
        bt_ErrorCode error = m_Root.Remove(data, value);
        if( error == bt_duplicate || error == bt_nofound )
                return false;
@@ -119,6 +123,7 @@ bool BTree<Traits>::Remove (const value_type& data, const ref_type& value)
 template <typename Traits>
 auto BTree<Traits>::Search (const value_type& data)
 {
+       scoped_lock<mutex> lock(m_mtx);
        typename Traits::ref_type value{};
        m_Root.Search(data, value);
        return value;
@@ -129,6 +134,7 @@ template <typename Traits>
 template <typename Func, typename... Args>
 void BTree<Traits>::ForEach(Func lpfn, Args&&... args)
 {
+       scoped_lock<mutex> lock(m_mtx);
        m_Root.ForEach(lpfn, 0, forward<Args>(args)...);
 }
 
@@ -137,17 +143,18 @@ template <typename Func, typename... Args>
 typename BTree<Traits>::Node *
 BTree<Traits>::FirstThat(Func lpfn, Args&&... args)
 {
+       scoped_lock<mutex> lock(m_mtx);
        return m_Root.FirstThat(lpfn, 0, forward<Args>(args)...);
 }
 
 template <typename Traits>
 void BTree<Traits>::Print(ostream &os){
-       m_Root.Print(os);
+       ForEach([&os](auto& node, size_t level)
+        {
+            for (size_t i = 0; i < level; ++i)
+                os << '\t';
+            os << node.data << " -> " << node.ref << '\n';
+        });
 }
-
-
-
-
-
 
 #endif
