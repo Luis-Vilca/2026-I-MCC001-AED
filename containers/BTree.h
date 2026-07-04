@@ -4,7 +4,10 @@
 #define BTREE_H
 
 #include <iostream>
+#include <mutex>
 #include "BTreePage.h"
+#include "iterators/TreeIterators.h"
+#include "iterators/BTreeIterator.h"
 
 #define DEFAULT_BTREE_ORDER 3
 
@@ -12,29 +15,25 @@ template <typename Traits>
 class BTree 
 // this is the full version of the BTree
 {
+
+public:
+       //typedef Node iterator;
        using value_type  = typename Traits::value_type;
        using ref_type    = typename Traits::ref_type;
        using Comp        = typename Traits::Comp;
        using BTNode      = CBTreePage <Traits>;
-       /*struct Node
-       {
-               keyType first;
-               long    second;
-               Node *&operator->() { return this; }
-       };*/
+       using Node        = typename BTNode::Node;
 
-public:
-       //typedef Node iterator;
-       typedef typename BTNode::Node      Node;
+       using forward_iterator  = BTreeIterator<BTree<Traits>, BTreeIteratorDirection::Forward>;
+       using backward_iterator = BTreeIterator<BTree<Traits>, BTreeIteratorDirection::Backward>;
 
-public:
-       BTree(size_t order = DEFAULT_BTREE_ORDER, TB unique = true);
+       BTree(size_t order = DEFAULT_BTREE_ORDER, bool unique = true);
        ~BTree();
        //int           Open (char * name, int mode);
        //int           Create (char * name, int mode);
        //int           Close ();
-       TB              Insert (const value_type& data, const ref_type& value);
-       TB              Remove (const value_type& data, const ref_type& value);
+       bool            Insert (const value_type& data, const ref_type& value);
+       bool            Remove (const value_type& data, const ref_type& value);
        auto            Search (const value_type& data);
        size_t          size()     { return m_NumKeys; }
        size_t          height()   { return m_Height;  }
@@ -48,20 +47,33 @@ public:
        template <typename Func, typename... Args>
        Node* FirstThat(Func lpfn, Args &&... args);
 
-       //typedef               Node iterator;
+       TreeIterators<forward_iterator> forward(){
+              return { forward_iterator(this, &m_Root),
+                       forward_iterator(this, nullptr),
+                       &m_mtx
+              };
+       }
+
+       TreeIterators<backward_iterator> backward(){
+              return { backward_iterator(this, &m_Root),
+                       backward_iterator(this, nullptr),
+                       &m_mtx
+              };
+       }
 
 protected:
+       mutex           m_mtx;
        BTNode          m_Root;
        Comp            m_comp;
        size_t          m_Height;  // height of tree
        size_t          m_Order;   // order of tree
        size_t          m_NumKeys; // number of keys
-       TB              m_Unique;  // Accept the elements only once ?
+       bool            m_Unique;  // Accept the elements only once ?
 };
 
 const size_t MaxHeight = 5;
 template <typename Traits>
-BTree<Traits>::BTree(size_t order, TB unique)
+BTree<Traits>::BTree(size_t order, bool unique)
                                : m_Root(2 * order  + 1, unique),
                                  m_Order(order),
                                  m_NumKeys(0),
@@ -77,7 +89,7 @@ BTree<Traits>::~BTree()
 }
 
 template <typename Traits>
-TB BTree<Traits>::Insert(const value_type& data, const ref_type& value)
+bool BTree<Traits>::Insert(const value_type& data, const ref_type& value)
 {
        bt_ErrorCode error = m_Root.Insert(data, value);
        if( error == bt_duplicate )
@@ -92,7 +104,7 @@ TB BTree<Traits>::Insert(const value_type& data, const ref_type& value)
 }
 
 template <typename Traits>
-TB BTree<Traits>::Remove (const value_type& data, const ref_type& value)
+bool BTree<Traits>::Remove (const value_type& data, const ref_type& value)
 {
        bt_ErrorCode error = m_Root.Remove(data, value);
        if( error == bt_duplicate || error == bt_nofound )

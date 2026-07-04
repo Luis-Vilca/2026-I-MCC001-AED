@@ -99,14 +99,19 @@ class CBTreePage
         using Comp       = typename Traits::Comp;
         using BTPage     = CBTreePage<Traits>;         // useful shorthand
         using Node       = tagNode<Traits>;
+        using NodePtr    = Node*;
+        using PagePtr    = BTPage*;
 
-       CBTreePage(size_t maxKeys, TB unique = true);
+       CBTreePage(size_t maxKeys, bool unique = true);
        virtual ~CBTreePage();
 
-       bt_ErrorCode    Insert (const value_type &data, const ref_type ref);
-       bt_ErrorCode    Remove (const value_type &data, const ref_type ref);
-       TB              Search (const value_type &data, size_t &value);
-       void            Print  (ostream &os);
+       bt_ErrorCode    Insert      (const value_type &data, const ref_type ref);
+       bt_ErrorCode    Remove      (const value_type &data, const ref_type ref);
+       bool            Search      (const value_type &data, size_t &value);
+       void            Print       (ostream &os);
+       NodePtr         getNode     (size_t index)    { return &m_Keys[index]; }
+       PagePtr         getSubPage  (size_t index)    { return m_SubPages[index]; }
+       size_t          getKeyCount () const          { return m_KeyCount; }
 
        template <typename Func, typename... Args>
        void ForEach(Func lpfn, size_t level, Args &&... args);
@@ -118,8 +123,8 @@ protected:
        TI       m_MinKeys; // minimum number of datas in a node
        TI       m_MaxKeys, // maximum number of datas in a node
                 m_MaxKeysForChilds; // just to distinguish the root
-       TB       m_Unique;
-       TB       m_isRoot;
+       bool     m_Unique;
+       bool     m_isRoot;
        vector<Node>       m_Keys;
        vector<BTPage *>   m_SubPages;
        TI       m_KeyCount;
@@ -128,12 +133,12 @@ protected:
        void  Destroy () {   Reset(); delete this;}
        void  clear ();
 
-       TB    Redistribute1   (TI &pos);
-       TB    Redistribute2   (TI pos);
+       bool  Redistribute1   (TI &pos);
+       bool  Redistribute2   (TI pos);
        void  RedistributeR2L (TI pos);
        void  RedistributeL2R (TI pos);
 
-       TB    TreatUnderflow  (TI &pos)
+       bool  TreatUnderflow  (TI &pos)
        {       return Redistribute1(pos) || Redistribute2(pos);}
 
        bt_ErrorCode    Merge  (TI pos);
@@ -142,14 +147,14 @@ protected:
 
        Node &GetFirstNode();
 
-       TB Overflow()           { return m_KeyCount > m_MaxKeys; }
-       TB Underflow()          { return m_KeyCount < MinNumberOfKeys(); }
-       TB IsFull()             { return m_KeyCount >= m_MaxKeys; }
-       TI MinNumberOfKeys()    { return 2*m_MaxKeys/3.0; }
-       TI GetFreeCells()       { return m_MaxKeys - m_KeyCount; }
-       TI& NumberOfKeys()      { return m_KeyCount; }
-       TI GetNumberOfKeys()    { return m_KeyCount; }
-       TB IsRoot()             { return m_MaxKeysForChilds != m_MaxKeys; }
+       bool Overflow()           { return m_KeyCount > m_MaxKeys; }
+       bool Underflow()          { return m_KeyCount < MinNumberOfKeys(); }
+       bool IsFull()             { return m_KeyCount >= m_MaxKeys; }
+       TI   MinNumberOfKeys()    { return 2*m_MaxKeys/3.0; }
+       TI   GetFreeCells()       { return m_MaxKeys - m_KeyCount; }
+       TI&  NumberOfKeys()      { return m_KeyCount; }
+       TI   GetNumberOfKeys()    { return m_KeyCount; }
+       bool IsRoot()             { return m_MaxKeysForChilds != m_MaxKeys; }
        void SetMaxKeysForChilds(size_t orderforchilds)
        {
                m_MaxKeysForChilds = orderforchilds;
@@ -159,7 +164,7 @@ protected:
        size_t GetFreeCellsOnRight(TI pos);
 
 private:
-       TB SplitRoot();
+       bool SplitRoot();
        void SplitPageInto3(vector<Node>   & tmpKeys,
                                                vector<BTPage *>  & SubPages,
                                                BTPage           *& pChild1,
@@ -171,7 +176,7 @@ private:
 };
 
 template <typename Traits>
-CBTreePage<Traits>::CBTreePage(size_t maxKeys, TB unique)
+CBTreePage<Traits>::CBTreePage(size_t maxKeys, bool unique)
                                        : m_MaxKeys(maxKeys), m_Unique(unique), m_KeyCount(0)
 {
        Create();
@@ -215,7 +220,7 @@ bt_ErrorCode CBTreePage<Traits>::Insert(const value_type& data, const ref_type r
 }
 
 template <typename Traits>
-TB CBTreePage<Traits>::Redistribute1(TI &pos)
+bool CBTreePage<Traits>::Redistribute1(TI &pos)
 {
        if( m_SubPages[pos]->Underflow() )
        {       // nkol = Number of datas on left brother, nkor = Number of datas on right brother
@@ -267,7 +272,7 @@ TB CBTreePage<Traits>::Redistribute1(TI &pos)
 // it considers two brothers m_SubPages[pos-1] && m_SubPages[pos+1]
 // if it fails the only way is merge !
 template <typename Traits>
-TB CBTreePage<Traits>::Redistribute2(TI pos)
+bool CBTreePage<Traits>::Redistribute2(TI pos)
 {
        assert( pos > 0 && pos < NumberOfKeys()  );
        assert( m_SubPages[pos-1] != 0 && m_SubPages[pos] != 0 && m_SubPages[pos+1] != 0 );
@@ -461,7 +466,7 @@ void CBTreePage<Traits>::SplitPageInto3(vector<Node>& tmpKeys,
 }
 
 template <typename Traits>
-TB CBTreePage<Traits>::SplitRoot()
+bool CBTreePage<Traits>::SplitRoot()
 {
        BTPage  *pChild1 = 0, *pChild2 = 0, *pChild3 = 0;
        Node oi1, oi2;
@@ -483,7 +488,7 @@ TB CBTreePage<Traits>::SplitRoot()
 }
 
 template <typename Traits>
-TB CBTreePage<Traits>::Search(const value_type &data, size_t &value)
+bool CBTreePage<Traits>::Search(const value_type &data, size_t &value)
 {
        size_t pos = binary_search(m_Keys, 0, m_KeyCount, data);
        if( pos >= m_KeyCount ){
