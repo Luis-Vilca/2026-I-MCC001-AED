@@ -52,8 +52,7 @@ void BTreeIterator<Container, Direction>::descend(BTPage* page)
 {
     while (page)
     {
-        if constexpr (
-            Direction == BTreeIteratorDirection::Forward)
+        if constexpr (Direction == BTreeIteratorDirection::Forward)
         {
             m_path.push_back({page, 0});
             page = page->getSubPage(0);

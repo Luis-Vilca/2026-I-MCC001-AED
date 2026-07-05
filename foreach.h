@@ -30,7 +30,6 @@ template <typename Container, typename Func, typename... Args>
 auto FirstThat(const Container& container, Func func, Args&&... args)
 {
     scoped_lock<mutex> lock(container.getMutex());
-
     return FirstThat(container.begin(), container.end(), forward<Func>(func), forward<Args>(args)...);
 }
 
@@ -38,18 +37,12 @@ template <typename Iterator, typename Func, typename... Args>
 decltype(auto) Iterate(Iterator begin, Iterator end, Func func, Args&&... args)
 {
     using result_type = invoke_result_t<Func, decltype(*begin), Args&...>;
-
     for (auto it = begin; it != end; ++it)
-    {
         if constexpr (is_void_v<result_type>)
             invoke(func, *it, args...);
         else
-        {
             if (invoke(func, *it, args...))
                 return it;
-        }
-    }
-
     if constexpr (!is_void_v<result_type>)
         return end;
 }
