@@ -5,6 +5,7 @@
 #include "binarytrees.h"
 #include "avltrees.h"
 #include "containers/vector.h"
+#include "map.h"
 
 using namespace std;
 
@@ -41,5 +42,6 @@ int main() {
     // cout<<endl<<"AVL tree Demo: " << endl;
     // AVLTreeDemo();
     BTreeDemo();
+    DemoMap();
     return 0;
 }
