@@ -1,6 +1,18 @@
 #ifndef __LINKEDLIST_H__
 #define __LINKEDLIST_H__
 
+/**
+ * @file linkedlist.h
+ * @brief Implementación de una lista enlazada genérica.
+ *
+ * Este archivo define una lista enlazada simple basada en plantillas,
+ * junto con su nodo interno, su iterador de recorrido y métodos para
+ * inserción, eliminación, búsqueda y recorrido mediante algoritmos
+ * genéricos.
+ *
+ * @author Luis Vilca
+ */
+
 #include <iostream>
 #include <cstddef>   // size_t
 #include <string>
@@ -15,6 +27,16 @@
 using namespace std;
 
 // Forward iterator
+/**
+ * @class LinkedListForwardIterator
+ * @brief Iterador de recorrido hacia adelante para una lista enlazada.
+ *
+ * Permite recorrer secuencialmente los nodos de una lista enlazada
+ * desde el primer elemento hasta el último utilizando el framework
+ * de iteradores del proyecto.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class LinkedListForwardIterator : public general_iterator<Container, 
                                             LinkedListForwardIterator<Container>>{
@@ -29,6 +51,17 @@ public:
     }
 };
 
+/**
+ * @class LinkedList
+ * @brief Implementa una lista enlazada simple ordenada.
+ *
+ * La clase proporciona almacenamiento dinámico mediante nodos enlazados,
+ * soportando inserción, eliminación, acceso mediante iteradores y
+ * algoritmos genéricos de recorrido y búsqueda.
+ *
+ * @tparam Traits Traits que definen el tipo de dato almacenado,
+ * el comparador y demás propiedades del contenedor.
+ */
 template <typename Traits>
 class LinkedList{
 public:
@@ -51,6 +84,13 @@ private:
 
 public:
 
+    /**
+     * @class LinkedListNode
+     * @brief Nodo utilizado por la clase LinkedList.
+     *
+     * Almacena el dato, una referencia asociada y un puntero al siguiente
+     * nodo de la lista enlazada.
+     */
     class LinkedListNode{
     public:
         using value_type = typename Traits::value_type;

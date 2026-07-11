@@ -1,8 +1,34 @@
 #ifndef __POSTORDER_ITERATOR_H__
 #define __POSTORDER_ITERATOR_H__
 
+/**
+ * @file postorder_iterator.h
+ * @brief Implementación de un iterador para el recorrido Post-order de árboles binarios.
+ *
+ * Este archivo define un iterador genérico para recorrer árboles binarios
+ * siguiendo el recorrido en postorden (Post-order). La dirección del recorrido
+ * puede configurarse mediante parámetros de plantilla, permitiendo reutilizar
+ * la implementación para recorridos directos e inversos.
+ *
+ * @author Luis Vilca
+ */
+
 #include "general_iterator.h"
 
+/**
+ * @class PostorderIterator
+ * @brief Iterador genérico para realizar recorridos Post-order sobre árboles binarios.
+ *
+ * Implementa el recorrido en postorden utilizando la infraestructura de
+ * general_iterator. En este recorrido, cada nodo es visitado únicamente
+ * después de haber recorrido completamente sus subárboles, respetando el
+ * orden de visita definido por los parámetros de plantilla.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ * @tparam DerivedIterator Tipo del iterador derivado (CRTP).
+ * @tparam First Índice del primer hijo que será recorrido.
+ * @tparam Second Índice del segundo hijo que será recorrido.
+ */
 template <typename Container, typename DerivedIterator, size_t First, size_t Second>
 class PostorderIterator : public general_iterator<Container, DerivedIterator> {
     

@@ -7,6 +7,20 @@
 ***************************/
 #ifndef CBTreePage_H
 #define CBTreePage_H
+
+/**
+ * @file BTreePage.h
+ * @brief Implementación de las páginas utilizadas por un árbol B.
+ *
+ * Este archivo define la estructura de una página de un árbol B y los
+ * algoritmos necesarios para mantener sus propiedades durante las
+ * operaciones de inserción, eliminación y búsqueda. Además, implementa
+ * los mecanismos de redistribución, división y fusión de páginas que
+ * garantizan el balance de la estructura.
+ *
+ * @author Luis Vilca
+ */
+
 #include <vector>
 #include <iostream>
 #include <assert.h>
@@ -55,7 +69,15 @@ void remove(Container& container, size_t pos)
 template <typename Traits>
 class BTree;
 
-
+/**
+ * @enum bt_ErrorCode
+ * @brief Códigos de estado utilizados por las operaciones del árbol B.
+ *
+ * Esta enumeración representa el resultado de las operaciones realizadas
+ * sobre una página del árbol B, indicando situaciones como inserciones
+ * exitosas, desbordamientos, subdesbordamientos, claves duplicadas o
+ * elementos no encontrados.
+ */
 using namespace std;
 enum bt_ErrorCode {bt_ok, bt_overflow, bt_underflow, bt_duplicate, bt_nofound, bt_rootmerged};
 
@@ -67,6 +89,17 @@ template <typename value_type>
 bool operator<=(const _Node<value_type>& object1, const _Node<value_type>& object2)
 { return object1.data <= object2.data;    }*/
 
+/**
+ * @struct tagNode
+ * @brief Representa un elemento almacenado dentro de una página del árbol B.
+ *
+ * Cada nodo almacena el dato, la referencia asociada y un contador de uso
+ * que puede emplearse para obtener estadísticas sobre la frecuencia de
+ * acceso a los elementos del árbol.
+ *
+ * @tparam Traits Traits que definen el tipo de dato y la referencia
+ * asociada.
+ */
 template <typename Traits>
 struct tagNode
 {
@@ -85,6 +118,23 @@ struct tagNode
 };
 
 
+/**
+ * @class CBTreePage
+ * @brief Representa una página de un árbol B almacenada en memoria.
+ *
+ * Una página almacena múltiples claves ordenadas y sus correspondientes
+ * subpáginas, constituyendo el bloque fundamental de la estructura del
+ * árbol B. La clase implementa los algoritmos necesarios para mantener
+ * las propiedades del árbol durante las operaciones de inserción,
+ * eliminación, búsqueda y recorrido.
+ *
+ * Asimismo, administra automáticamente los procesos de redistribución,
+ * división (Split) y fusión (Merge) de páginas cuando ocurre overflow o
+ * underflow.
+ *
+ * @tparam Traits Traits que definen el tipo de dato, la referencia y el
+ * comparador utilizados por el árbol.
+ */
 template <typename Traits>
 class CBTreePage 
 // this is the in-memory version of the CBTreePage

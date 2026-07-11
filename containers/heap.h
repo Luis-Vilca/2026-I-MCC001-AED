@@ -1,9 +1,31 @@
 #ifndef __HEAP_H__
 #define __HEAP_H__
+/**
+ * @file heap.h
+ * @brief Implementación de un Heap binario genérico.
+ *
+ * Este archivo define una estructura de datos Heap basada en un vector
+ * dinámico, soportando inserción, extracción y acceso al elemento de
+ * mayor o menor prioridad según el comparador especificado por los Traits.
+ *
+ * La implementación utiliza un arreglo implícito para representar el
+ * árbol binario completo y mantiene la propiedad de Heap mediante las
+ * operaciones de reorganización correspondientes.
+ *
+ * @author Luis Vilca
+ */
 #include <vector>
 #include <mutex>
 #include "vector.h"
 
+/**
+ * @class HeapNode
+ * @brief Nodo utilizado por la estructura Heap.
+ *
+ * Almacena el dato y la referencia asociada a un elemento del Heap.
+ *
+ * @tparam Traits Traits que definen el tipo de dato almacenado.
+ */
 template <typename Traits>
 class HeapNode{
     private:
@@ -16,12 +38,30 @@ class HeapNode{
         Ref GetRef()  const { return m_ref;  }
 };
 
+/**
+ * @struct AscendingHeapTrait
+ * @brief Traits para un Heap de prioridad ascendente.
+ *
+ * Define el tipo de nodo y utiliza el comparador std::less para
+ * mantener la propiedad del Heap.
+ *
+ * @tparam T Tipo de dato almacenado.
+ */
 template <typename T>
 struct AscendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
                             public AscendingTrait<T>
 {
 };
 
+/**
+ * @struct DescendingHeapTrait
+ * @brief Traits para un Heap de prioridad descendente.
+ *
+ * Define el tipo de nodo y utiliza el comparador std::greater para
+ * mantener la propiedad del Heap.
+ *
+ * @tparam T Tipo de dato almacenado.
+ */
 template <typename T>
 struct DescendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
                             public DescendingTrait<T>
@@ -30,6 +70,20 @@ struct DescendingHeapTrait : public BaseContainerTrait<T, HeapNode<T> >,
 
 // Revisar: https://www.cs.usfca.edu/~galles/visualization/Heap.html
 // Pero en este ejercicio empezamos el la posicion [0]
+
+/**
+ * @class Heap
+ * @brief Implementa un Heap binario genérico basado en un arreglo dinámico.
+ *
+ * La clase proporciona operaciones de inserción, extracción y consulta
+ * del elemento con mayor prioridad, manteniendo automáticamente la
+ * propiedad de Heap mediante las operaciones de reorganización del árbol.
+ *
+ * El criterio de prioridad depende del comparador definido en los Traits.
+ *
+ * @tparam Traits Traits que definen el tipo de dato, el tipo de nodo y
+ * el comparador utilizado por el Heap.
+ */
 template <typename Traits>
 class Heap {
 public:

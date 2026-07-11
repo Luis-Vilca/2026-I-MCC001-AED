@@ -3,6 +3,22 @@
 #ifndef BTREE_H
 #define BTREE_H
 
+/**
+ * @file BTree.h
+ * @brief Implementación de un árbol B genérico.
+ *
+ * Este archivo define la clase BTree, una estructura de datos balanceada
+ * diseñada para almacenar grandes cantidades de información de manera
+ * eficiente. La implementación soporta inserción, eliminación, búsqueda
+ * y recorrido mediante iteradores, manteniendo automáticamente las
+ * propiedades estructurales del árbol B.
+ *
+ * La organización del árbol se basa en páginas (CBTreePage), lo que
+ * permite reducir la altura del árbol y optimizar el acceso a los datos.
+ *
+ * @author Luis Vilca
+ */
+
 #include <iostream>
 #include <mutex>
 #include "BTreePage.h"
@@ -11,6 +27,27 @@
 
 #define DEFAULT_BTREE_ORDER 3
 
+/**
+ * @class BTree
+ * @brief Implementa un árbol B genérico y balanceado.
+ *
+ * Esta clase administra la estructura completa del árbol B, proporcionando
+ * operaciones de inserción, eliminación, búsqueda, recorrido mediante
+ * iteradores y ejecución de algoritmos genéricos sobre los elementos
+ * almacenados.
+ *
+ * El árbol mantiene automáticamente sus propiedades mediante operaciones
+ * de división, redistribución y fusión de páginas, garantizando una altura
+ * reducida y un rendimiento eficiente incluso para grandes volúmenes de
+ * datos.
+ *
+ * La implementación utiliza CBTreePage como unidad básica de almacenamiento
+ * y permite configurar tanto el orden del árbol como la aceptación o no
+ * de claves duplicadas.
+ *
+ * @tparam Traits Traits que definen el tipo de dato almacenado, la
+ * referencia asociada y el comparador utilizado por el árbol.
+ */
 template <typename Traits>
 class BTree 
 // this is the full version of the BTree
@@ -71,6 +108,9 @@ protected:
        bool            m_Unique;  // Accept the elements only once ?
 };
 
+/**
+ * @brief Orden máximo de altura considerado por la implementación.
+ */
 const size_t MaxHeight = 5;
 template <typename Traits>
 BTree<Traits>::BTree(size_t order, bool unique)

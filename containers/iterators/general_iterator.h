@@ -1,9 +1,36 @@
 #ifndef __ITERATOR_H__
 #define __ITERATOR_H__
+/**
+ * @file general_iterator.h
+ * @brief Implementación de la clase base para los iteradores del proyecto.
+ *
+ * Este archivo define un iterador genérico basado en el patrón
+ * CRTP (Curiously Recurring Template Pattern), proporcionando la
+ * funcionalidad común utilizada por los iteradores de las distintas
+ * estructuras de datos implementadas en la biblioteca.
+ *
+ * @author Luis Vilca
+ */
 #include <algorithm>
 #include <utility>
 using namespace std;
 
+/**
+ * @class general_iterator
+ * @brief Clase base para la implementación de iteradores genéricos.
+ *
+ * Esta clase proporciona la funcionalidad común para todos los
+ * iteradores del proyecto, incluyendo el acceso al nodo actual,
+ * desreferenciación, comparación y acceso mediante operador flecha.
+ *
+ * Se implementa utilizando el patrón CRTP, permitiendo que cada
+ * iterador derivado defina su propio comportamiento de recorrido
+ * mientras reutiliza la interfaz común.
+ *
+ * @tparam Container Tipo del contenedor asociado al iterador.
+ * @tparam IteratorBase Clase derivada que implementa el comportamiento
+ * específico del iterador.
+ */
 template <typename Container, class IteratorBase> // 
 class general_iterator
 {public:

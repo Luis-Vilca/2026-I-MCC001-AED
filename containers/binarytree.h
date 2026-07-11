@@ -1,5 +1,19 @@
 #ifndef __BINARY_TREE_H__
 #define __BINARY_TREE_H__
+
+/**
+ * @file binarytree.h
+ * @brief Implementación de un árbol binario de búsqueda genérico.
+ *
+ * Este archivo define una estructura de árbol binario de búsqueda basada
+ * en plantillas, junto con sus nodos, iteradores y recorridos clásicos
+ * (In-order, Pre-order y Post-order). Además, proporciona operaciones
+ * de inserción, búsqueda y recorrido mediante iteradores compatibles
+ * con los algoritmos genéricos de la biblioteca.
+ *
+ * @author Luis Vilca
+ */
+
 #include <iostream>
 #include <cstddef>   // size_t
 #include <string>
@@ -19,6 +33,15 @@
 //Sacar los prototipos de la clase nodo fuera
 //Colocar todo como Node en AVL y ya no es necesario agregar el AVLNode
 
+/**
+ * @class BinaryTreeForwardInorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido In-order ascendente.
+ *
+ * Implementa el recorrido en orden visitando primero el subárbol izquierdo,
+ * luego el nodo actual y finalmente el subárbol derecho.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeForwardInorderIterator: public InorderIterator<Container, 
                                                BinaryTreeForwardInorderIterator<Container>, 0, 1> {
@@ -26,6 +49,15 @@ class BinaryTreeForwardInorderIterator: public InorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTreeBackwardInorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido In-order descendente.
+ *
+ * Recorre el árbol siguiendo el orden inverso del recorrido In-order,
+ * visitando primero el subárbol derecho.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeBackwardInorderIterator: public InorderIterator<Container,
                                                 BinaryTreeBackwardInorderIterator<Container>, 1, 0> {
@@ -33,6 +65,15 @@ class BinaryTreeBackwardInorderIterator: public InorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTreeForwardPreorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido Pre-order.
+ *
+ * Visita primero el nodo actual y posteriormente sus subárboles
+ * izquierdo y derecho.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeForwardPreorderIterator: public PreorderIterator<Container,
                                                 BinaryTreeForwardPreorderIterator<Container>, 0, 1> {
@@ -40,6 +81,15 @@ class BinaryTreeForwardPreorderIterator: public PreorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTreeBackwardPreorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido Pre-order inverso.
+ *
+ * Visita primero el nodo actual y posteriormente sus subárboles
+ * derecho e izquierdo.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeBackwardPreorderIterator: public PreorderIterator<Container,
                                                  BinaryTreeBackwardPreorderIterator<Container>, 1, 0> {
@@ -47,6 +97,15 @@ class BinaryTreeBackwardPreorderIterator: public PreorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTreeForwardPostorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido Post-order.
+ *
+ * Visita primero ambos subárboles y finalmente el nodo actual,
+ * siguiendo el recorrido Post-order clásico.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeForwardPostorderIterator: public PostorderIterator<Container,
                                                  BinaryTreeForwardPostorderIterator<Container>, 0, 1> {
@@ -54,6 +113,15 @@ class BinaryTreeForwardPostorderIterator: public PostorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTreeBackwardPostorderIterator
+ * @brief Iterador para recorrer un árbol binario en recorrido Post-order inverso.
+ *
+ * Recorre el árbol en el orden inverso del recorrido Post-order,
+ * comenzando por el subárbol derecho.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 template <typename Container>
 class BinaryTreeBackwardPostorderIterator: public PostorderIterator<Container,
                                                   BinaryTreeBackwardPostorderIterator<Container>, 1, 0> {
@@ -61,6 +129,21 @@ class BinaryTreeBackwardPostorderIterator: public PostorderIterator<Container,
     using Parent::Parent;
 };
 
+/**
+ * @class BinaryTree
+ * @brief Implementa un árbol binario de búsqueda genérico.
+ *
+ * Esta clase proporciona una implementación de un árbol binario de búsqueda
+ * parametrizado mediante Traits. Soporta inserción ordenada, recorridos
+ * mediante iteradores, búsqueda y algoritmos genéricos sobre los nodos
+ * del árbol.
+ *
+ * La clase constituye la base para otras estructuras de datos del proyecto,
+ * como el árbol AVL, reutilizando la mayor parte de su funcionalidad.
+ *
+ * @tparam Traits Traits que definen el tipo de dato almacenado, el tipo
+ * de referencia y el comparador utilizado por el árbol.
+ */
 template <typename Traits>
 class BinaryTree{
 public:
@@ -86,6 +169,15 @@ protected:
 public:
     
     //Node dentro del contenedor
+    /**
+     * @class BinaryTreeNode
+     * @brief Nodo utilizado por la clase BinaryTree.
+     *
+     * Representa un nodo del árbol binario, almacenando el dato, la referencia
+     * asociada y los enlaces hacia el nodo padre y sus hijos izquierdo y derecho.
+     * Además, proporciona operaciones básicas de acceso y modificación de la
+     * información almacenada.
+     */
     class BinaryTreeNode{
     public:
         using value_type = typename Traits::value_type;

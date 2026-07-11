@@ -1,8 +1,34 @@
 #ifndef __AVL_TREE_H__
 #define __AVL_TREE_H__
+/**
+ * @file avltree.h
+ * @brief Implementación de un árbol AVL genérico.
+ *
+ * Este archivo define la clase AVLTree, una especialización del árbol
+ * binario de búsqueda que mantiene automáticamente su balance mediante
+ * rotaciones después de las operaciones de inserción. El objetivo es
+ * garantizar una altura logarítmica y mejorar la eficiencia de las
+ * operaciones de búsqueda, inserción y eliminación.
+ *
+ * @author Luis Vilca
+ */
  
 #include "binarytree.h"
  
+/**
+ * @class AVLTree
+ * @brief Implementa un árbol AVL basado en BinaryTree.
+ *
+ * Esta clase hereda de BinaryTree e incorpora los mecanismos necesarios
+ * para mantener el árbol balanceado después de cada inserción mediante
+ * rotaciones simples y dobles.
+ *
+ * Gracias al balanceo automático, las operaciones fundamentales del árbol
+ * presentan una complejidad temporal de O(log n) en el peor caso.
+ *
+ * @tparam Traits Traits que definen el tipo de dato almacenado, la
+ * referencia asociada y el comparador utilizado por el árbol.
+ */
 template <typename Traits>
 class AVLTree : public BinaryTree<Traits> {
 public:
@@ -11,6 +37,16 @@ public:
     using value_type = typename Base::value_type;
     using MySelf     = AVLTree<Traits>;
  
+    /**
+     * @class AVLNode
+     * @brief Nodo utilizado por la clase AVLTree.
+     *
+     * Extiende el nodo definido por BinaryTree incorporando información
+     * adicional sobre la altura del subárbol cuya raíz es el nodo actual.
+     * Esta información permite calcular el factor de balance y determinar
+     * cuándo es necesario realizar una rotación para mantener el árbol
+     * balanceado.
+     */
     class AVLNode : public Base::BinaryTreeNode {
     public:
         using ParentNode = typename Base::BinaryTreeNode;

@@ -1,5 +1,15 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
+/**
+ * @file types.h
+ * @brief Definición de alias de tipos utilizados en la biblioteca.
+ *
+ * Este archivo centraliza la definición de alias de tipos fundamentales
+ * empleados por las diferentes estructuras de datos del proyecto,
+ * facilitando su mantenimiento y portabilidad entre plataformas.
+ *
+ * @author Luis Vilca
+ */
 
 #include <string>
 using namespace std;

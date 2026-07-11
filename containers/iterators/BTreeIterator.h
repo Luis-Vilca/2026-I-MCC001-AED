@@ -1,11 +1,46 @@
 #ifndef __BTREE_ITERATOR_H__
 #define __BTREE_ITERATOR_H__
 
+/**
+ * @file BTreeIterator.h
+ * @brief Implementación de iteradores para el recorrido de árboles B.
+ *
+ * Este archivo define un iterador genérico para recorrer árboles B en
+ * orden ascendente o descendente. El recorrido se realiza mediante una
+ * pila de estados que mantiene el camino desde la raíz hasta el nodo
+ * actual, permitiendo avanzar eficientemente entre los elementos del árbol.
+ *
+ * @author Luis Vilca
+ */
+
 #include <vector>
 #include "general_iterator.h"
 
+/**
+ * @enum BTreeIteratorDirection
+ * @brief Define el sentido de recorrido de un iterador de árbol B.
+ *
+ * Permite especificar si el recorrido se realiza en orden ascendente
+ * (Forward) o descendente (Backward).
+ */
 enum class BTreeIteratorDirection { Forward, Backward };
 
+/**
+ * @class BTreeIterator
+ * @brief Iterador genérico para recorrer un árbol B.
+ *
+ * Esta clase implementa un iterador basado en el patrón CRTP para recorrer
+ * los elementos almacenados en un árbol B. El recorrido puede realizarse
+ * en sentido ascendente o descendente, según la dirección especificada
+ * mediante el parámetro de plantilla.
+ *
+ * Internamente mantiene una pila con el camino desde la raíz hasta el nodo
+ * actual, lo que permite avanzar entre las claves del árbol sin necesidad
+ * de realizar nuevamente la búsqueda desde la raíz.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ * @tparam Direction Dirección del recorrido (Forward o Backward).
+ */
 template <typename Container,BTreeIteratorDirection Direction>
 class BTreeIterator
     : public general_iterator<Container, BTreeIterator<Container, Direction>>
@@ -17,6 +52,14 @@ protected:
     using Node   = typename Container::Node;
     using BTPage = typename Container::BTNode;
 
+    /**
+     * @struct State
+     * @brief Representa un nivel del recorrido dentro del árbol B.
+     *
+     * Almacena la página actual y el índice de la clave que está siendo
+     * visitada, permitiendo reconstruir el camino desde la raíz durante
+     * el recorrido del árbol.
+     */
     struct State
     {
         BTPage* page;

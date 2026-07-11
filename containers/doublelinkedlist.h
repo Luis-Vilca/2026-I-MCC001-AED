@@ -1,5 +1,25 @@
+/**
+ * @file doublelinkedlist.h
+ * @brief Implementación de una lista doblemente enlazada genérica.
+ *
+ * Este archivo define una lista doblemente enlazada basada en plantillas,
+ * permitiendo el recorrido en ambos sentidos mediante iteradores
+ * hacia adelante y hacia atrás. La implementación extiende la
+ * funcionalidad de LinkedList incorporando enlaces al nodo anterior.
+ *
+ * @author Luis Vilca
+ */
 #include "linkedlist.h"
 
+/**
+ * @class DLLNode
+ * @brief Nodo utilizado por la clase DoubleLinkedList.
+ *
+ * Extiende el nodo de una lista enlazada simple agregando un puntero
+ * al nodo anterior, permitiendo el recorrido bidireccional de la lista.
+ *
+ * @tparam T Tipo de dato almacenado en el nodo.
+ */
 template <typename T>
 class DLLNode :  public LLNode<T>{
 public:
@@ -16,16 +36,41 @@ public:
     void   setPrev(Node* pPrev) { m_pPrev = pPrev; }
 };
 
+/**
+ * @struct BaseDoubleLinkedListTrait
+ * @brief Traits base para la implementación de una lista doblemente enlazada.
+ *
+ * Define el tipo de nodo utilizado por la estructura y sirve como base
+ * para las variantes con orden ascendente y descendente.
+ *
+ * @tparam T Tipo de dato almacenado.
+ */
 template <typename T>
 struct BaseDoubleLinkedListTrait : public BaseContainerTrait<T, DLLNode<T>>{
 
 };
 
+/**
+ * @struct AscendingDoubleLinkedListTrait
+ * @brief Traits para listas doblemente enlazadas con orden ascendente.
+ *
+ * Utiliza el comparador std::less para mantener los elementos en orden creciente.
+ *
+ * @tparam T Tipo de dato almacenado.
+ */
 template <typename T>
 struct AscendingDoubleLinkedListTrait : public BaseDoubleLinkedListTrait<T>{
     using Comp = less<T>;
 };
 
+/**
+ * @struct DescendingDoubleLinkedListTrait
+ * @brief Traits para listas doblemente enlazadas con orden descendente.
+ *
+ * Utiliza el comparador std::greater para mantener los elementos en orden decreciente.
+ *
+ * @tparam T Tipo de dato almacenado.
+ */
 template <typename T>
 struct DescendingDoubleLinkedListTrait : public BaseDoubleLinkedListTrait<T>{
     using Comp = greater<T>;
@@ -33,6 +78,15 @@ struct DescendingDoubleLinkedListTrait : public BaseDoubleLinkedListTrait<T>{
 
 // Reutiizar el LinkedListForwardIterator de la linked list
 
+/**
+ * @class DoubleLinkedListBackwardIterator
+ * @brief Iterador para recorrer una lista doblemente enlazada en sentido inverso.
+ *
+ * Permite recorrer la lista desde el último nodo hasta el primero
+ * utilizando el framework de iteradores del proyecto.
+ *
+ * @tparam Container Tipo del contenedor asociado.
+ */
 // Backward iterator
 template <typename Container>
 class DoubleLinkedListBackwardIterator : public general_iterator<Container, 
@@ -47,6 +101,17 @@ public:
     }
 };
 
+/**
+ * @class DoubleLinkedList
+ * @brief Implementa una lista doblemente enlazada genérica.
+ *
+ * Esta clase hereda de LinkedList e incorpora enlaces al nodo anterior,
+ * permitiendo recorridos bidireccionales y operaciones eficientes sobre
+ * ambos extremos de la lista.
+ *
+ * @tparam Traits Traits que definen el tipo de dato, el comparador y
+ * las propiedades del contenedor.
+ */
 template <typename Traits>
 class DoubleLinkedList public LinkedList<Traits>{
 public:
