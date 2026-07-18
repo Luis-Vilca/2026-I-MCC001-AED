@@ -51,6 +51,7 @@ public:
 
 void DemoSTL(){
     //Demo generator
+    cout << endl << "Demo generator: " << endl;
     auto nums = generateNumbers(1, 1000000);
     auto evens = filterEven(nums);
     auto result = square(evens);
@@ -78,6 +79,7 @@ void DemoSTL(){
         << " bytes" << endl;
 
     //Demo deducing sobre this
+    cout << endl << "Demo deducing this: " << endl;
     Persona p("Luis");
     const Persona cp("Carlos");
 

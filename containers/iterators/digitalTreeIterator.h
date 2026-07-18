@@ -40,7 +40,6 @@ protected:
     void advance()
     {
         this->m_pNode = nullptr;
-
         while(!m_stack.empty())
         {
             Node* node = m_stack.back();
@@ -51,12 +50,9 @@ protected:
             if constexpr(Direction == DigitalTreeIteratorDirection::Forward)
             {
                 // Se insertan al revés para visitar el primero primero.
-                for(auto it = children.rbegin();
-                    it != children.rend();
-                    ++it)
-                {
+                for(auto it = children.rbegin();it != children.rend(); ++it)
                     m_stack.push_back(*it);
-                }
+                
             }
             else
             {

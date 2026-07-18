@@ -77,8 +77,8 @@ void DemoHash(){
     cout << " Distribucion uniforme\n";
     cout << "=====================================\n";
 
-    const int M = 1000;   // buckets
-    const int N = 1000;   // elementos
+    const TI M = 1000;   // buckets
+    const TI N = 1000;   // elementos
 
     vector<vector<TI>> hashTable(M);
     mt19937 rng(2026);
