@@ -24,6 +24,7 @@ using TS = string;
 using TB = bool;
 using TL = long;
 using TC = char;
+using TI64 = uint64_t;
 
 // XT must be 32bit integer in Windows and 64bit in Linux
 #if defined(_WIN32) || defined(_WIN64)

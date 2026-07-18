@@ -6,6 +6,9 @@
 #include "avltrees.h"
 #include "containers/vector.h"
 #include "map.h"
+#include "DemoHash.h"
+#include "digitaltrees.h"
+#include "DemoSTL.h"
 
 using namespace std;
 
@@ -41,7 +44,10 @@ int main() {
 
     // cout<<endl<<"AVL tree Demo: " << endl;
     // AVLTreeDemo();
-    BTreeDemo();
+    // BTreeDemo();
     DemoMap();
+    DemoHash();
+    DemoDigitalTree();
+    DemoSTL();
     return 0;
 }

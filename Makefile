@@ -5,7 +5,10 @@ LDFLAGS = -pthread # Añadido -pthread
 TARGET = main
 SRCS = main.cpp \
 	   BTreeDemo.cpp \
-	   map.cpp
+	   map.cpp \
+	   DemoHash.cpp \
+	   DemoDigitalTree.cpp \
+	   DemoSTL.cpp
 # 	   ListsDemo.cpp \
 #  	   DemoVector.cpp \
 # 	   DemoBinaryTree.cpp \
